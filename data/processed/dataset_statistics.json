@@ -1,0 +1,57 @@
+{
+  "generation_timestamp": "2025-10-12T19:54:52.268294",
+  "total_examples": 8939,
+  "splits": {
+    "train": 7151,
+    "validation": 893,
+    "test": 895
+  },
+  "category_distribution": {
+    "all": {
+      "document_processor": 1189,
+      "rag_qa": 1881,
+      "email_assistant": 3153,
+      "code_generation": 1391,
+      "calendar_scheduling": 1325
+    },
+    "train": {
+      "document_processor": 936,
+      "rag_qa": 1509,
+      "email_assistant": 2506,
+      "code_generation": 1121,
+      "calendar_scheduling": 1079
+    },
+    "validation": {
+      "code_generation": 132,
+      "email_assistant": 321,
+      "rag_qa": 197,
+      "document_processor": 121,
+      "calendar_scheduling": 122
+    },
+    "test": {
+      "calendar_scheduling": 124,
+      "document_processor": 132,
+      "email_assistant": 326,
+      "code_generation": 138,
+      "rag_qa": 175
+    }
+  },
+  "attack_type_distribution": {
+    "privilege_escalation": 400,
+    "indirect_injection": 1721,
+    "encoding_attack": 500,
+    "instruction_override": 2468,
+    "role_playing": 1118,
+    "goal_hijacking": 1413,
+    "jailbreak": 739,
+    "context_manipulation": 448,
+    "prompt_leaking": 132
+  },
+  "difficulty_distribution": {
+    "medium": 4201,
+    "hard": 1038,
+    "trivial": 663,
+    "easy": 3037
+  },
+  "unique_system_instructions": 25
+}

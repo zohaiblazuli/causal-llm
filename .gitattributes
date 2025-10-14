@@ -1,0 +1,9 @@
+* text=auto
+
+# If you decide to version large model files, Git LFS is recommended.
+# Uncomment the following and run `git lfs install` before pushing.
+# *.safetensors filter=lfs diff=lfs merge=lfs -text
+# *.bin         filter=lfs diff=lfs merge=lfs -text
+# *.pt          filter=lfs diff=lfs merge=lfs -text
+# *.ckpt        filter=lfs diff=lfs merge=lfs -text
+

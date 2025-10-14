@@ -1,0 +1,228 @@
+# Training Configuration for Causal LLM Fine-tuning
+# Optimized for RTX 3060 (12GB VRAM) - Updated October 2025
+# Target: ISEF 2026 (May 2026)
+
+# Model Configuration
+model:
+  # Base model selection
+  # Using non-instruct variant per user request (RTX 3060 12GB)
+  name: "meta-llama/Llama-3.1-8B"
+
+  # Alternative options (uncomment to use):
+  # name: "meta-llama/Llama-4-Scout-17B-16E-Instruct"  # Bold - state-of-the-art, requires 10-11GB
+  # name: "meta-llama/Llama-3.2-3B-Instruct"  # Lightweight - only 2-3GB, fast training
+  # name: "meta-llama/Meta-Llama-3-8B-Instruct"  # Llama 3 (older than 3.1)
+  # name: "meta-llama/Llama-2-7b-hf"  # Original baseline for comparison
+
+  # 4-bit quantization (memory efficiency for RTX 3060 12GB)
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "bfloat16"  # or "float16" if bfloat16 not supported
+  bnb_4bit_use_double_quant: true  # Double quantization for extra memory savings
+  bnb_4bit_quant_type: "nf4"  # NormalFloat4 - best for pretrained models
+
+  # Device configuration
+  device_map: "auto"  # Automatic device placement
+  trust_remote_code: true
+
+  # Max sequence length (shorter = less memory)
+  max_seq_length: 1024  # Reduced from 2048 for 6GB VRAM safety
+
+# LoRA Configuration (Parameter-Efficient Fine-Tuning)
+lora:
+  # Core LoRA parameters
+  r: 16  # Rank: 8 for minimal, 16 for balanced, 32 for high capacity
+  alpha: 32  # Scaling factor (typically 2x rank)
+  dropout: 0.05  # Regularization
+
+  # Target modules for Llama architecture
+  target_modules:
+    - "q_proj"
+    - "v_proj"
+    - "k_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+  # LoRA settings
+  bias: "none"  # Don't train biases
+  task_type: "CAUSAL_LM"
+  modules_to_save: []  # Additional modules to train (empty for max efficiency)
+
+# Training Hyperparameters
+training:
+  # Batch size configuration (CRITICAL for memory)
+  per_device_train_batch_size: 1  # Must be 1 for 6GB VRAM
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16  # Effective batch size = 16
+
+  # Training duration
+  num_epochs: 3
+  max_steps: -1  # -1 means train for num_epochs, or set explicit step count
+
+  # Learning rate and scheduling
+  learning_rate: 2.0e-4  # Typical for LoRA: 1e-4 to 5e-4
+  lr_scheduler_type: "cosine"  # "linear", "cosine", "constant_with_warmup"
+  warmup_ratio: 0.03  # 3% warmup
+  warmup_steps: 0  # Use warmup_ratio instead
+
+  # Optimization
+  optimizer: "paged_adamw_8bit"  # Memory-efficient optimizer (bitsandbytes)
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0  # Gradient clipping
+
+  # Mixed precision training (CRITICAL for memory and speed)
+  fp16: false  # Set true if bf16 not supported
+  bf16: true   # Preferred on modern GPUs (Ampere+)
+  tf32: true   # TensorFloat32 for faster matmul on Ampere+
+
+  # Memory optimizations
+  gradient_checkpointing: true  # Trade compute for memory
+  optim: "paged_adamw_8bit"
+
+  # Data loading
+  dataloader_num_workers: 2  # Adjust based on CPU cores
+  dataloader_pin_memory: true
+  dataloader_prefetch_factor: 2
+
+  # Evaluation
+  evaluation_strategy: "steps"  # "no", "steps", or "epoch"
+  eval_steps: 200
+  save_strategy: "steps"
+  save_steps: 200
+  save_total_limit: 3  # Keep only 3 best checkpoints
+  load_best_model_at_end: true
+  metric_for_best_model: "causal_stability"
+  greater_is_better: true
+
+  # Early stopping
+  early_stopping_patience: 5  # Stop if no improvement for 5 eval steps
+  early_stopping_threshold: 0.001
+
+  # Logging
+  logging_steps: 10
+  logging_first_step: true
+  report_to: ["wandb"]  # "wandb", "tensorboard", or "none"
+
+  # Seed for reproducibility
+  seed: 42
+  data_seed: 42
+
+  # Misc
+  remove_unused_columns: false
+  ddp_find_unused_parameters: false
+
+# Loss Configuration (Causal Contrastive Loss)
+loss:
+  type: "causal_contrastive"  # or "infonce", "triplet"
+
+  # Loss weights
+  lambda_task: 1.0  # Weight for task loss (standard LM loss)
+  lambda_causal: 0.5  # Weight for causal stability
+  lambda_spurious: 0.5  # Weight for spurious separation
+
+  # Contrastive learning
+  temperature: 0.07  # Temperature scaling
+  similarity_metric: "cosine"  # "cosine" or "dot_product"
+
+  # Task loss
+  label_smoothing: 0.0  # Label smoothing (0.0 = disabled)
+
+# Data Configuration
+data:
+  # Data paths
+  train_path: "data/processed/train_split.jsonl"
+  val_path: "data/processed/val_split.jsonl"
+  test_path: "data/processed/test_split.jsonl"
+
+  # Data processing
+  max_length: 1024  # Maximum sequence length (reduced from 2048)
+  padding: "max_length"  # "max_length" or "longest"
+  truncation: true
+
+  # Cache
+  use_cache: true
+  cache_dir: "data/cache"
+
+  # Data validation
+  min_length: 10  # Minimum sequence length
+  max_samples: -1  # -1 for all samples, or limit for debugging
+
+# Checkpointing
+checkpointing:
+  output_dir: "checkpoints"
+  resume_from_checkpoint: null  # Path to checkpoint, or null
+  save_safetensors: true  # Use safetensors format
+
+# Weights & Biases Configuration
+wandb:
+  enabled: false
+  project: "isef-causal-llm"
+  entity: null  # Your W&B username/org
+  name: null  # Run name (auto-generated if null)
+  tags: ["llama", "lora", "causal-contrastive", "rtx3060", "isef2026"]
+  notes: "ISEF 2026: Fine-tuning Llama 3.2-8B with causal contrastive loss for provably safe LLM agents"
+  group: null  # Group name for related runs
+
+# Validation and Testing
+validation:
+  # Compute causal metrics during validation
+  compute_causal_metrics: true
+  compute_attack_success_rate: true
+
+  # Sample generation during validation
+  generate_samples: true
+  num_samples_to_generate: 5
+  generation_max_length: 256
+
+# Debug and Development
+debug:
+  # Debug mode (smaller dataset, faster iterations)
+  enabled: false
+  max_train_samples: 100
+  max_eval_samples: 20
+
+  # Memory profiling
+  profile_memory: false
+  memory_snapshot_path: "memory_snapshots"
+
+  # Detect anomalies
+  detect_anomaly: false  # Slower but helps debug NaN/Inf
+
+# Hardware-Specific Settings for RTX 3060
+hardware:
+  gpu_name: "RTX 3060"
+  vram_gb: 12
+  cuda_device: 0
+
+  # Memory management
+  empty_cache_steps: 50  # Clear CUDA cache every N steps
+  max_memory_allocated_gb: 11.0  # Leave headroom for 12GB VRAM
+
+  # Performance tuning
+  use_flash_attention: false  # Enable if flash-attn installed
+  use_triton: false
+  compile_model: false  # torch.compile - experimental
+
+# Advanced Settings
+advanced:
+  # Gradient accumulation strategy
+  gradient_accumulation_strategy: "steps"  # "steps" or "batch"
+
+  # DDP (Distributed Data Parallel) settings
+  ddp_backend: "nccl"
+  ddp_timeout: 1800
+
+  # Sharding (for multi-GPU, future-proofing)
+  fsdp: false
+  fsdp_config: null
+
+  # DeepSpeed (alternative to FSDP)
+  deepspeed: null  # Path to deepspeed config, or null
+
+  # Torch settings
+  torch_dtype: "auto"  # "auto", "float16", "bfloat16", "float32"
+  attn_implementation: "eager"  # "eager", "sdpa", "flash_attention_2"

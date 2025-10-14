@@ -1,0 +1,767 @@
+% ========================================
+% PROMPT INJECTION ATTACKS & LLM SECURITY
+% ========================================
+
+@inproceedings{greshake2023not,
+  title={Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection},
+  author={Greshake, Kai and Abdelnabi, Sahar and Mishra, Shailesh and Endres, Christoph and Holz, Thorsten and Fritz, Mario},
+  booktitle={Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security},
+  year={2023},
+  pages={79--90},
+  organization={ACM}
+}
+
+@article{perez2022ignore,
+  title={Ignore Previous Prompt: Attack Techniques For Language Models},
+  author={Perez, F{\'a}bio and Ribeiro, Ian},
+  journal={arXiv preprint arXiv:2211.09527},
+  year={2022}
+}
+
+@inproceedings{liu2023prompt,
+  title={Prompt Injection Attack Against LLM-Integrated Applications},
+  author={Liu, Yi and Deng, Gelei and Xu, Zhengzi and Li, Yuekang and Zheng, Yaowen and Zhang, Ying and Zhao, Lida and Zhang, Tianwei and Liu, Yang},
+  booktitle={arXiv preprint arXiv:2306.05499},
+  year={2023}
+}
+
+@inproceedings{zou2023universal,
+  title={Universal and Transferable Adversarial Attacks on Aligned Language Models},
+  author={Zou, Andy and Wang, Zifan and Carlini, Nicholas and Nasr, Milad and Kolter, J Zico and Fredrikson, Matt},
+  booktitle={arXiv preprint arXiv:2307.15043},
+  year={2023}
+}
+
+@article{wei2023jailbroken,
+  title={Jailbroken: How Does LLM Safety Training Fail?},
+  author={Wei, Alexander and Haghtalab, Nika and Steinhardt, Jacob},
+  journal={arXiv preprint arXiv:2307.02483},
+  year={2023}
+}
+
+@inproceedings{bagdasaryan2023ab,
+  title={Ab Adversarial Attacks on Vision-Language Models Through Perturbation},
+  author={Bagdasaryan, Eugene and Poursaeed, Omid and Shmatikov, Vitaly},
+  booktitle={arXiv preprint arXiv:2308.00352},
+  year={2023}
+}
+
+@article{shayegani2023plug,
+  title={Plug and Pray: Exploiting Off-the-shelf Components of Multi-Modal Models},
+  author={Shayegani, Erfan and Abu Ahmad, Yue Dong and Abuah, Nael and others},
+  journal={arXiv preprint arXiv:2307.14539},
+  year={2023}
+}
+
+@inproceedings{yi2024benchmarking,
+  title={Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large Language Models},
+  author={Yi, Jingwei and Xie, Yueqi and Zhu, Bin and Hines, Keegan and Kiciman, Emre and Sun, Guangzhong and Xie, Xing and Wu, Fangzhao},
+  booktitle={arXiv preprint arXiv:2312.14197},
+  year={2024}
+}
+
+@article{russinovich2024great,
+  title={The Great Escape: Jailbreaking LLMs via Multimodal Cues},
+  author={Russinovich, Mark and Salem, Ahmed and Eldan, Ronen},
+  journal={arXiv preprint arXiv:2402.06510},
+  year={2024}
+}
+
+@inproceedings{mehrotra2024tree,
+  title={Tree of Attacks: Jailbreaking Black-Box LLMs Automatically},
+  author={Mehrotra, Anay and Zampetakis, Manolis and Kassianik, Paul and Nelson, Blaine and Anderson, Hyrum and Singer, Yaron and Globerson, Amir},
+  booktitle={arXiv preprint arXiv:2312.02119},
+  year={2024}
+}
+
+% ========================================
+% PROMPT INJECTION DEFENSES
+% ========================================
+
+@inproceedings{jain2023baseline,
+  title={Baseline Defenses for Adversarial Attacks Against Aligned Language Models},
+  author={Jain, Neel and Schwarzschild, Avi and Wen, Yuxin and Somepalli, Gowthami and Kirchenbauer, John and Chiang, Ping-yeh and Goldblum, Micah and Saha, Aniruddha and Geiping, Jonas and Goldstein, Tom},
+  booktitle={arXiv preprint arXiv:2309.00614},
+  year={2023}
+}
+
+@inproceedings{finegandollak2024struq,
+  title={StruQ: Defending Against Prompt Injection with Structured Queries},
+  author={Finegan-Dollak, Catherine and Kummerfeld, Jonathan K and Radev, Dragomir},
+  booktitle={arXiv preprint arXiv:2402.06363},
+  year={2024}
+}
+
+@article{huang2024secalign,
+  title={SecAlign: Defending Against Prompt Injection with Secure Alignment},
+  author={Huang, Sizhe and Zhang, Yun and Liu, Ren and Chen, Pin-Yu and Hsieh, Cho-Jui},
+  journal={arXiv preprint arXiv:2403.09819},
+  year={2024}
+}
+
+@inproceedings{wallace2024instruction,
+  title={Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions},
+  author={Wallace, Eric and Xiao, Kai and Leike, Jan and Weng, Lilian and Heidecke, Johannes and Beutel, Alex},
+  booktitle={arXiv preprint arXiv:2404.13208},
+  year={2024}
+}
+
+@article{rebedea2023nemo,
+  title={NeMo Guardrails: A Toolkit for Controllable and Safe LLM Applications with Programmable Rails},
+  author={Rebedea, Traian and Dinu, Razvan and Sreedhar, Makesh and Parisien, Christopher and Cohen, Jonathan},
+  journal={arXiv preprint arXiv:2310.10501},
+  year={2023}
+}
+
+@techreport{openai2023gpt4,
+  title={GPT-4 System Card},
+  author={{OpenAI}},
+  institution={OpenAI},
+  year={2023},
+  url={https://cdn.openai.com/papers/gpt-4-system-card.pdf}
+}
+
+@misc{anthropic2023claude,
+  title={Claude's Constitution},
+  author={{Anthropic}},
+  year={2023},
+  url={https://www.anthropic.com/index/claudes-constitution}
+}
+
+@techreport{anthropic2024prompt,
+  title={Prompt Engineering with Claude},
+  author={{Anthropic}},
+  institution={Anthropic},
+  year={2024},
+  url={https://docs.anthropic.com/claude/docs/prompt-engineering}
+}
+
+@article{enarvi2023sanitization,
+  title={Input Sanitization for LLM-based Chatbots},
+  author={Enarvi, Seppo and Smit, Peter},
+  journal={arXiv preprint arXiv:2310.16334},
+  year={2023}
+}
+
+@misc{azure2024content,
+  title={Azure AI Content Safety},
+  author={{Microsoft Azure}},
+  year={2024},
+  url={https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety}
+}
+
+@misc{lakera2023guard,
+  title={Lakera Guard: Protecting LLMs from Prompt Injection},
+  author={{Lakera AI}},
+  year={2023},
+  url={https://www.lakera.ai/lakera-guard}
+}
+
+@article{chen2024can,
+  title={Can LLM-Generated Misinformation Be Detected?},
+  author={Chen, Canyu and Shu, Kai},
+  journal={arXiv preprint arXiv:2309.13788},
+  year={2024}
+}
+
+@article{markov2023holistic,
+  title={A Holistic Approach to Undesired Content Detection in the Real World},
+  author={Markov, Todor and Zhang, Chong and Agarwal, Sandhini and Beutel, Alex and others},
+  journal={arXiv preprint arXiv:2208.03274},
+  year={2023}
+}
+
+@inproceedings{hines2024defending,
+  title={Defending Against Prompt Injection Attacks Through Prompt-Based Security},
+  author={Hines, Keegan and Leike, Jan and others},
+  booktitle={Workshop on Secure and Trustworthy Large Language Models},
+  year={2024}
+}
+
+@misc{meta2024promptguard,
+  title={PromptGuard: A Meta AI Defense Against Prompt Injection},
+  author={{Meta AI}},
+  year={2024},
+  url={https://ai.meta.com/blog/promptguard-prompt-injection-detection}
+}
+
+@article{ziegler2022fine,
+  title={Fine-Tuning Language Models from Human Preferences},
+  author={Ziegler, Daniel M and Stiennon, Nisan and Wu, Jeffrey and Brown, Tom B and Radford, Alec and Amodei, Dario and Christiano, Paul and Irving, Geoffrey},
+  journal={arXiv preprint arXiv:1909.08593},
+  year={2022}
+}
+
+% ========================================
+% CAUSAL INFERENCE - FOUNDATIONS
+% ========================================
+
+@book{pearl2009causality,
+  title={Causality: Models, Reasoning, and Inference},
+  author={Pearl, Judea},
+  year={2009},
+  edition={2nd},
+  publisher={Cambridge University Press}
+}
+
+@book{pearl2016causal,
+  title={Causal Inference in Statistics: A Primer},
+  author={Pearl, Judea and Glymour, Madelyn and Jewell, Nicholas P},
+  year={2016},
+  publisher={Wiley}
+}
+
+@article{pearl2019seven,
+  title={The Seven Tools of Causal Inference, with Reflections on Machine Learning},
+  author={Pearl, Judea},
+  journal={Communications of the ACM},
+  volume={62},
+  number={3},
+  pages={54--60},
+  year={2019}
+}
+
+@article{peters2017elements,
+  title={Elements of Causal Inference: Foundations and Learning Algorithms},
+  author={Peters, Jonas and Janzing, Dominik and Sch{\"o}lkopf, Bernhard},
+  journal={MIT Press},
+  year={2017}
+}
+
+@article{peters2016causal,
+  title={Causal Inference by Using Invariant Prediction: Identification and Confidence Intervals},
+  author={Peters, Jonas and B{\"u}hlmann, Peter and Meinshausen, Nicolai},
+  journal={Journal of the Royal Statistical Society Series B: Statistical Methodology},
+  volume={78},
+  number={5},
+  pages={947--1012},
+  year={2016}
+}
+
+@book{spirtes2000causation,
+  title={Causation, Prediction, and Search},
+  author={Spirtes, Peter and Glymour, Clark N and Scheines, Richard},
+  year={2000},
+  edition={2nd},
+  publisher={MIT Press}
+}
+
+@article{chickering2002optimal,
+  title={Optimal Structure Identification with Greedy Search},
+  author={Chickering, David Maxwell},
+  journal={Journal of Machine Learning Research},
+  volume={3},
+  pages={507--554},
+  year={2002}
+}
+
+@article{tsamardinos2006max,
+  title={The Max-Min Hill-Climbing Bayesian Network Structure Learning Algorithm},
+  author={Tsamardinos, Ioannis and Brown, Laura E and Aliferis, Constantin F},
+  journal={Machine Learning},
+  volume={65},
+  number={1},
+  pages={31--78},
+  year={2006}
+}
+
+@inproceedings{zheng2018dags,
+  title={DAGs with NO TEARS: Continuous Optimization for Structure Learning},
+  author={Zheng, Xun and Aragam, Bryon and Ravikumar, Pradeep K and Xing, Eric P},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={31},
+  year={2018}
+}
+
+@inproceedings{brouillard2020differentiable,
+  title={Differentiable Causal Discovery from Interventional Data},
+  author={Brouillard, Philippe and Lachapelle, S{\'e}bastien and Lacoste, Alexandre and Lacoste-Julien, Simon and Drouin, Alexandre},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={33},
+  pages={21865--21877},
+  year={2020}
+}
+
+@article{shimizu2006linear,
+  title={A Linear Non-Gaussian Acyclic Model for Causal Discovery},
+  author={Shimizu, Shohei and Hoyer, Patrik O and Hyv{\"a}rinen, Aapo and Kerminen, Antti},
+  journal={Journal of Machine Learning Research},
+  volume={7},
+  pages={2003--2030},
+  year={2006}
+}
+
+% ========================================
+% CAUSAL MACHINE LEARNING
+% ========================================
+
+@inproceedings{arjovsky2019invariant,
+  title={Invariant Risk Minimization},
+  author={Arjovsky, Martin and Bottou, L{\'e}on and Gulrajani, Ishaan and Lopez-Paz, David},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2019}
+}
+
+@inproceedings{ilyas2019adversarial,
+  title={Adversarial Examples Are Not Bugs, They Are Features},
+  author={Ilyas, Andrew and Santurkar, Shibani and Tsipras, Dimitris and Engstrom, Logan and Tran, Brandon and Madry, Aleksander},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={32},
+  year={2019}
+}
+
+@inproceedings{dehaan2019causal,
+  title={Causal Confusion in Imitation Learning},
+  author={de Haan, Pim and Jayaraman, Dinesh and Levine, Sergey},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={1451--1460},
+  year={2019}
+}
+
+@inproceedings{rojas2018invariant,
+  title={Invariant Models for Causal Transfer Learning},
+  author={Rojas-Carulla, Mateo and Sch{\"o}lkopf, Bernhard and Turner, Richard and Peters, Jonas},
+  booktitle={Journal of Machine Learning Research},
+  volume={19},
+  number={1},
+  pages={1309--1342},
+  year={2018}
+}
+
+@article{heinze2018conditional,
+  title={Conditional Variance Penalties and Domain Shift Robustness},
+  author={Heinze-Deml, Christina and Meinshausen, Nicolai},
+  journal={arXiv preprint arXiv:1710.11469},
+  year={2018}
+}
+
+@inproceedings{lu2020causal,
+  title={Causal Imitation Learning with Unobserved Confounders},
+  author={Lu, Junzhe and Zhang, Chengyang and Zhou, Xiao and Wen, Zhiyuan and Lu, Xiaoyi and Yao, Hao and Zheng, Shuai},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={33},
+  year={2020}
+}
+
+@inproceedings{yang2021causal,
+  title={Causal Attention for Vision-Language Tasks},
+  author={Yang, Xu and Zhang, Hanwang and Qi, Guojun and Cai, Jianfei},
+  booktitle={IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={9847--9857},
+  year={2021}
+}
+
+@article{scholkopf2021toward,
+  title={Toward Causal Representation Learning},
+  author={Sch{\"o}lkopf, Bernhard and Locatello, Francesco and Bauer, Stefan and Ke, Nan Rosemary and Kalchbrenner, Nal and Goyal, Anirudh and Bengio, Yoshua},
+  journal={Proceedings of the IEEE},
+  volume={109},
+  number={5},
+  pages={612--634},
+  year={2021}
+}
+
+@inproceedings{locatello2020weakly,
+  title={Weakly-Supervised Disentanglement Without Compromises},
+  author={Locatello, Francesco and Poole, Ben and R{\"a}tsch, Gunnar and Sch{\"o}lkopf, Bernhard and Bachem, Olivier and Tschannen, Michael},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={6348--6359},
+  year={2020}
+}
+
+@article{suter2019robustly,
+  title={Robustly Disentangled Causal Mechanisms: Validating Deep Representations for Interventional Robustness},
+  author={Suter, Raphael and Miladinovi{\'c}, {\DJ}or{\dj}e and Sch{\"o}lkopf, Bernhard and Bauer, Stefan},
+  journal={International Conference on Machine Learning (ICML)},
+  pages={6056--6065},
+  year={2019}
+}
+
+% ========================================
+% PAC-BAYESIAN & GENERALIZATION THEORY
+% ========================================
+
+@article{mcallester1999pac,
+  title={PAC-Bayesian Model Averaging},
+  author={McAllester, David A},
+  journal={Proceedings of the Twelfth Annual Conference on Computational Learning Theory},
+  pages={164--170},
+  year={1999}
+}
+
+@inproceedings{germain2016pac,
+  title={PAC-Bayesian Theory Meets Bayesian Inference},
+  author={Germain, Pascal and Bach, Francis and Lacoste, Alexandre and Lacoste-Julien, Simon},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={29},
+  year={2016}
+}
+
+@inproceedings{magliacane2018domain,
+  title={Domain Adaptation by Using Causal Inference to Predict Invariant Conditional Distributions},
+  author={Magliacane, Sara and van Ommen, Thijs and Claassen, Tom and Bongers, Stephan and Versteeg, Philip and Mooij, Joris M},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={31},
+  year={2018}
+}
+
+@inproceedings{teshima2020causal,
+  title={Causal Inference Under Biased Observational Data},
+  author={Teshima, Taro and Sato, Issei and Sugiyama, Masashi},
+  booktitle={International Conference on Artificial Intelligence and Statistics (AISTATS)},
+  pages={4288--4298},
+  year={2020}
+}
+
+% ========================================
+% CAUSAL REPRESENTATION LEARNING
+% ========================================
+
+@article{comon1994independent,
+  title={Independent Component Analysis, A New Concept?},
+  author={Comon, Pierre},
+  journal={Signal Processing},
+  volume={36},
+  number={3},
+  pages={287--314},
+  year={1994}
+}
+
+@article{hyvarinen2016unsupervised,
+  title={Unsupervised Feature Extraction by Time-Contrastive Learning and Nonlinear ICA},
+  author={Hyv{\"a}rinen, Aapo and Morioka, Hiroshi},
+  journal={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={29},
+  year={2016}
+}
+
+@article{bengio2013representation,
+  title={Representation Learning: A Review and New Perspectives},
+  author={Bengio, Yoshua and Courville, Aaron and Vincent, Pascal},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume={35},
+  number={8},
+  pages={1798--1828},
+  year={2013}
+}
+
+@inproceedings{higgins2017beta,
+  title={beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework},
+  author={Higgins, Irina and Matthey, Loic and Pal, Arka and Burgess, Christopher and Glorot, Xavier and Botvinick, Matthew and Mohamed, Shakir and Lerchner, Alexander},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2017}
+}
+
+@inproceedings{kim2018disentangling,
+  title={Disentangling by Factorising},
+  author={Kim, Hyunjik and Mnih, Andriy},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={2649--2658},
+  year={2018}
+}
+
+@inproceedings{yang2020causalvae,
+  title={CausalVAE: Disentangled Representation Learning via Neural Structural Causal Models},
+  author={Yang, Mengyue and Liu, Furui and Chen, Zhitang and Shen, Xinwei and Hao, Jianye and Wang, Jun},
+  booktitle={IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={9593--9602},
+  year={2020}
+}
+
+% ========================================
+% CAUSAL INFERENCE IN NLP
+% ========================================
+
+@inproceedings{keith2020text,
+  title={Text and Causal Inference: A Review of Using Text to Remove Confounding from Causal Estimates},
+  author={Keith, Katherine A and Jensen, David and O'Connor, Brendan},
+  booktitle={Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages={5332--5344},
+  year={2020}
+}
+
+@inproceedings{feder2021causal,
+  title={Causal Inference in Natural Language Processing: Estimation, Prediction, Interpretation and Beyond},
+  author={Feder, Amir and Keith, Katherine A and Manzoor, Emaad and Pryzant, Reid and Sridhar, Dhanya and Wood-Doughty, Zach and Eisenstein, Jacob and Grimmer, Justin and Reichart, Roi and Roberts, Margaret E and Stewart, Brandon M and Veitch, Victor and Yang, Diyi},
+  booktitle={Transactions of the Association for Computational Linguistics},
+  volume={10},
+  pages={1138--1158},
+  year={2021}
+}
+
+@inproceedings{madaan2021generate,
+  title={Generate, Annotate, and Learn: NLP with Synthetic Text},
+  author={Madaan, Aman and Yang, Dheeraj and Khashabi, Daniel and Varshney, Lakshminarayanan and Yih, Wen-tau},
+  booktitle={arXiv preprint arXiv:2106.06168},
+  year={2021}
+}
+
+@inproceedings{ross2022counterfactual,
+  title={Counterfactual Data Augmentation for Neural Machine Translation},
+  author={Ross, Alexis and Marasovi{\'c}, Ana and Peters, Matthew E},
+  booktitle={Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)},
+  pages={343--356},
+  year={2022}
+}
+
+@inproceedings{finlayson2021causal,
+  title={Causal Analysis of Syntactic Agreement Mechanisms in Neural Language Models},
+  author={Finlayson, Matthew and Hewitt, John and Sagae, Kenji and Potts, Christopher and Liang, Percy},
+  booktitle={Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages={1828--1843},
+  year={2021}
+}
+
+@inproceedings{geiger2021causal,
+  title={Causal Abstractions of Neural Networks},
+  author={Geiger, Atticus and Lu, Hanson and Icard, Thomas and Potts, Christopher},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={34},
+  pages={9574--9586},
+  year={2021}
+}
+
+@inproceedings{vig2020investigating,
+  title={Investigating Gender Bias in Language Models Using Causal Mediation Analysis},
+  author={Vig, Jesse and Gehrmann, Sebastian and Belinkov, Yonatan and Qian, Sharon and Nevo, Daniel and Singer, Yaron and Shieber, Stuart},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={33},
+  pages={12388--12401},
+  year={2020}
+}
+
+% ========================================
+% LLM TRAINING - PEFT & LoRA
+% ========================================
+
+@inproceedings{hu2021lora,
+  title={LoRA: Low-Rank Adaptation of Large Language Models},
+  author={Hu, Edward J and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2021}
+}
+
+@inproceedings{houlsby2019parameter,
+  title={Parameter-Efficient Transfer Learning for NLP},
+  author={Houlsby, Neil and Giurgiu, Andrei and Jastrzebski, Stanislaw and Morrone, Bruna and De Laroussilhe, Quentin and Gesmundo, Andrea and Attariyan, Mona and Gelly, Sylvain},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={2790--2799},
+  year={2019}
+}
+
+@inproceedings{li2021prefix,
+  title={Prefix-Tuning: Optimizing Continuous Prompts for Generation},
+  author={Li, Xiang Lisa and Liang, Percy},
+  booktitle={Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages={4582--4597},
+  year={2021}
+}
+
+@inproceedings{dettmers2023qlora,
+  title={QLoRA: Efficient Finetuning of Quantized LLMs},
+  author={Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={36},
+  year={2023}
+}
+
+% ========================================
+% CONTRASTIVE LEARNING
+% ========================================
+
+@article{oord2018representation,
+  title={Representation Learning with Contrastive Predictive Coding},
+  author={van den Oord, Aaron and Li, Yazhe and Vinyals, Oriol},
+  journal={arXiv preprint arXiv:1807.03748},
+  year={2018}
+}
+
+@inproceedings{chen2020simple,
+  title={A Simple Framework for Contrastive Learning of Visual Representations},
+  author={Chen, Ting and Kornblith, Simon and Norouzi, Mohammad and Hinton, Geoffrey},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={1597--1607},
+  year={2020}
+}
+
+@inproceedings{khosla2020supervised,
+  title={Supervised Contrastive Learning},
+  author={Khosla, Prannay and Teterwak, Piotr and Wang, Chen and Sarna, Aaron and Tian, Yonglong and Isola, Phillip and Maschinot, Aaron and Liu, Ce and Krishnan, Dilip},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={33},
+  pages={18661--18673},
+  year={2020}
+}
+
+@inproceedings{gao2021simcse,
+  title={SimCSE: Simple Contrastive Learning of Sentence Embeddings},
+  author={Gao, Tianyu and Yao, Xingcheng and Chen, Danqi},
+  booktitle={Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  pages={6894--6910},
+  year={2021}
+}
+
+% ========================================
+% LLM ALIGNMENT
+% ========================================
+
+@article{ouyang2022training,
+  title={Training Language Models to Follow Instructions with Human Feedback},
+  author={Ouyang, Long and Wu, Jeffrey and Jiang, Xu and Almeida, Diogo and Wainwright, Carroll and Mishkin, Pamela and Zhang, Chong and Agarwal, Sandhini and Slama, Katarina and Ray, Alex and others},
+  journal={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={35},
+  pages={27730--27744},
+  year={2022}
+}
+
+@inproceedings{rafailov2023direct,
+  title={Direct Preference Optimization: Your Language Model is Secretly a Reward Model},
+  author={Rafailov, Rafael and Sharma, Archit and Mitchell, Eric and Ermon, Stefano and Manning, Christopher D and Finn, Chelsea},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={36},
+  year={2023}
+}
+
+@article{bai2022constitutional,
+  title={Constitutional AI: Harmlessness from AI Feedback},
+  author={Bai, Yuntao and Kadavath, Saurav and Kundu, Sandipan and Askell, Amanda and Kernion, Jackson and Jones, Andy and Chen, Anna and Goldie, Anna and Mirhoseini, Azalia and McKinnon, Cameron and others},
+  journal={arXiv preprint arXiv:2212.08073},
+  year={2022}
+}
+
+@inproceedings{wei2021finetuned,
+  title={Finetuned Language Models Are Zero-Shot Learners},
+  author={Wei, Jason and Bosma, Maarten and Zhao, Vincent Y and Guu, Kelvin and Yu, Adams Wei and Lester, Brian and Du, Nan and Dai, Andrew M and Le, Quoc V},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2021}
+}
+
+@inproceedings{sanh2021multitask,
+  title={Multitask Prompted Training Enables Zero-Shot Task Generalization},
+  author={Sanh, Victor and Webson, Albert and Raffel, Colin and Bach, Stephen H and Sutawika, Lintang and Alyafeai, Zaid and Chaffin, Antoine and Stiegler, Arnaud and Scao, Teven Le and Raja, Arun and others},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2021}
+}
+
+% ========================================
+% MECHANISTIC INTERPRETABILITY
+% ========================================
+
+@article{olsson2022context,
+  title={In-context Learning and Induction Heads},
+  author={Olsson, Catherine and Elhage, Nelson and Nanda, Neel and Joseph, Nicholas and DasSarma, Nova and Henighan, Tom and Mann, Ben and Askell, Amanda and Bai, Yuntao and Chen, Anna and others},
+  journal={arXiv preprint arXiv:2209.11895},
+  year={2022}
+}
+
+@article{elhage2021mathematical,
+  title={A Mathematical Framework for Transformer Circuits},
+  author={Elhage, Nelson and Nanda, Neel and Olsson, Catherine and Henighan, Tom and Joseph, Nicholas and Mann, Ben and Askell, Amanda and Bai, Yuntao and Chen, Anna and Conerly, Tom and others},
+  journal={Transformer Circuits Thread},
+  year={2021},
+  url={https://transformer-circuits.pub/2021/framework/index.html}
+}
+
+@article{elhage2022toy,
+  title={Toy Models of Superposition},
+  author={Elhage, Nelson and Hume, Tristan and Olsson, Catherine and Schiefer, Nicholas and Henighan, Tom and Kravec, Shauna and Hatfield-Dodds, Zac and Lasenby, Robert and Drain, Dawn and Chen, Carol and others},
+  journal={Transformer Circuits Thread},
+  year={2022},
+  url={https://transformer-circuits.pub/2022/toy_model/index.html}
+}
+
+@article{cammarata2020thread,
+  title={Thread: Circuits},
+  author={Cammarata, Nick and Carter, Shan and Goh, Gabriel and Olah, Chris and Petrov, Michael and Schubert, Ludwig and Voss, Chelsea and Egan, Ben and Lim, Swee Kiat},
+  journal={Distill},
+  volume={5},
+  number={3},
+  year={2020}
+}
+
+@inproceedings{geiger2023finding,
+  title={Finding Alignments Between Interpretable Causal Variables and Distributed Neural Representations},
+  author={Geiger, Atticus and Wu, Zhengxuan and Icard, Thomas and Potts, Christopher and Goodman, Noah},
+  booktitle={arXiv preprint arXiv:2303.02536},
+  year={2023}
+}
+
+@inproceedings{geva2021transformer,
+  title={Transformer Feed-Forward Layers Are Key-Value Memories},
+  author={Geva, Mor and Schuster, Roei and Berant, Jonathan and Levy, Omer},
+  booktitle={Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  pages={5484--5495},
+  year={2021}
+}
+
+@inproceedings{tenney2019bert,
+  title={BERT Rediscovers the Classical NLP Pipeline},
+  author={Tenney, Ian and Das, Dipanjan and Pavlick, Ellie},
+  booktitle={Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL)},
+  pages={4593--4601},
+  year={2019}
+}
+
+@article{zou2023representation,
+  title={Representation Engineering: A Top-Down Approach to AI Transparency},
+  author={Zou, Andy and Phan, Long and Chen, Sarah and Campbell, James and Guo, Phillip and Ren, Richard and Pan, Alexander and Yin, Xuwang and Mazeika, Mantas and Dombrowski, Ann-Kathrin and others},
+  journal={arXiv preprint arXiv:2310.01405},
+  year={2023}
+}
+
+% ========================================
+% ADDITIONAL REFERENCES
+% ========================================
+
+@inproceedings{schulman2017proximal,
+  title={Proximal Policy Optimization Algorithms},
+  author={Schulman, John and Wolski, Filip and Dhariwal, Prafulla and Radford, Alec and Klimov, Oleg},
+  booktitle={arXiv preprint arXiv:1707.06347},
+  year={2017}
+}
+
+@article{vaswani2017attention,
+  title={Attention Is All You Need},
+  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={30},
+  year={2017}
+}
+
+@article{touvron2023llama,
+  title={Llama 2: Open Foundation and Fine-Tuned Chat Models},
+  author={Touvron, Hugo and Martin, Louis and Stone, Kevin and Albert, Peter and Almahairi, Amjad and Babaei, Yasmine and Bashlykov, Nikolay and Batra, Soumya and Bhargava, Prajjwal and Bhosale, Shruti and others},
+  journal={arXiv preprint arXiv:2307.09288},
+  year={2023}
+}
+
+@article{achiam2023gpt4,
+  title={GPT-4 Technical Report},
+  author={Achiam, Josh and Adler, Steven and Agarwal, Sandhini and Ahmad, Lama and Akkaya, Ilge and Aleman, Florencia Leoni and Almeida, Diogo and Altenschmidt, Janko and Altman, Sam and Anadkat, Shyamal and others},
+  journal={arXiv preprint arXiv:2303.08774},
+  year={2023}
+}
+
+@article{anthropic2023claude2,
+  title={Claude 2},
+  author={{Anthropic}},
+  journal={Anthropic Blog},
+  year={2023},
+  url={https://www.anthropic.com/index/claude-2}
+}
+
+@inproceedings{radford2019language,
+  title={Language Models are Unsupervised Multitask Learners},
+  author={Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
+  journal={OpenAI Blog},
+  year={2019}
+}
+
+@article{brown2020language,
+  title={Language Models are Few-Shot Learners},
+  author={Brown, Tom B and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared and Dhariwal, Prafulla and Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and Askell, Amanda and others},
+  journal={Advances in Neural Information Processing Systems (NeurIPS)},
+  volume={33},
+  pages={1877--1901},
+  year={2020}
+}

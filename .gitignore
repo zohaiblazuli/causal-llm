@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+
+# Virtual envs
+.venv/
+venv/
+
+# Environment/secrets
+.env
+
+# IDE/editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs, checkpoints, caches
+logs/
+checkpoints/
+wandb/
+memory_snapshots/
+.cache/
+data/cache/
+
+# Model artifacts (don’t commit large binaries)
+*.pt
+*.bin
+*.ckpt
+*.safetensors
+
+# Test/coverage caches
+.pytest_cache/
+coverage_html/
+htmlcov/
+

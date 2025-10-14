@@ -1,0 +1,150 @@
+{
+  "timestamp": "2025-10-12T19:55:53.653115",
+  "checks_passed": [
+    "[PASS] All 8939 examples have required fields",
+    "[PASS] No exact duplicates found",
+    "[PASS] Counterfactual pairs quality: 100.0% pass rate",
+    "[PASS] Output format validation: 100.0% pass rate",
+    "[PASS] Good attack type diversity: 9 types, entropy=2.80",
+    "[PASS] Semantic coherence: 100.0% pass rate"
+  ],
+  "checks_failed": [
+    "[FAIL] Injection distinctness: 89.0% (target: 95%)"
+  ],
+  "warnings": [
+    "[WARN] Found 1741 potential near-duplicates in sample",
+    "[WARN] 4 categories outside balance tolerance",
+    "[WARN] 1 potential bias issues detected",
+    "[WARN] Missing difficulty levels: {'expert'}"
+  ],
+  "errors": [],
+  "statistics": {
+    "required_fields_check": {
+      "total_examples": 8939,
+      "examples_with_missing_fields": 0,
+      "pass_rate": 100.0
+    },
+    "duplicate_check": {
+      "exact_duplicates": 0,
+      "near_duplicates_in_sample": 1741,
+      "duplicate_rate": 0.0
+    },
+    "counterfactual_quality": {
+      "average_similarity": 0.49785030064634944,
+      "quality_pass_rate": 100.0,
+      "low_quality_pairs": 0,
+      "sample_size": 1000
+    },
+    "injection_distinctness": {
+      "pass_rate": 89.0,
+      "similar_to_benign_count": 110
+    },
+    "output_format": {
+      "pass_rate": 100.0,
+      "invalid_count": 0
+    },
+    "category_balance": {
+      "distribution": {
+        "email_assistant": 3153,
+        "rag_qa": 1881,
+        "document_processor": 1189,
+        "code_generation": 1391,
+        "calendar_scheduling": 1325
+      },
+      "imbalanced_categories": [
+        {
+          "category": "email_assistant",
+          "count": 3153,
+          "expected": 1787,
+          "deviation": "15.3%"
+        },
+        {
+          "category": "document_processor",
+          "count": 1189,
+          "expected": 1787,
+          "deviation": "6.7%"
+        },
+        {
+          "category": "code_generation",
+          "count": 1391,
+          "expected": 1787,
+          "deviation": "4.4%"
+        },
+        {
+          "category": "calendar_scheduling",
+          "count": 1325,
+          "expected": 1787,
+          "deviation": "5.2%"
+        }
+      ]
+    },
+    "attack_diversity": {
+      "unique_attack_types": 9,
+      "unique_techniques": 10,
+      "attack_type_entropy": 2.802865488211323,
+      "technique_entropy": 2.943748122541402,
+      "attack_type_distribution": {
+        "instruction_override": 2468,
+        "indirect_injection": 1721,
+        "goal_hijacking": 1413,
+        "role_playing": 1118,
+        "jailbreak": 739,
+        "encoding_attack": 500,
+        "context_manipulation": 448,
+        "privilege_escalation": 400,
+        "prompt_leaking": 132
+      },
+      "technique_distribution": {
+        "direct_injection": 1708,
+        "linguistic_cloaking": 1678,
+        "context_stuffing": 1389,
+        "authority_spoofing": 1227,
+        "delimiter_injection": 1051,
+        "nested_instructions": 1036,
+        "payload_splitting": 350,
+        "unicode_tricks": 203,
+        "character_obfuscation": 201,
+        "whitespace_manipulation": 96
+      }
+    },
+    "semantic_coherence": {
+      "pass_rate": 100.0,
+      "incoherent_count": 0,
+      "sample_size": 500
+    },
+    "bias_check": {
+      "issues_found": 1,
+      "bias_details": [
+        {
+          "type": "attack_phrase_overuse",
+          "phrase": "ignore",
+          "ratio": "44.5%"
+        }
+      ]
+    },
+    "difficulty_distribution": {
+      "distribution": {
+        "hard": 1038,
+        "easy": 3037,
+        "medium": 4201,
+        "trivial": 663
+      },
+      "percentages": {
+        "hard": 11.612037140619757,
+        "easy": 33.974717529925044,
+        "medium": 46.99630831189171,
+        "trivial": 7.416937017563486
+      },
+      "missing_levels": [
+        "expert"
+      ]
+    }
+  },
+  "summary": {
+    "total_checks": 7,
+    "passed": 6,
+    "failed": 1,
+    "warnings": 4,
+    "pass_rate": 85.71428571428571
+  }
+}
