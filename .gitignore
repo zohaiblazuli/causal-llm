@@ -38,3 +38,28 @@ data/cache/
 coverage_html/
 htmlcov/
 
+# Session-specific documentation (temporary files)
+EMERGENCY_FIX.md
+FINAL_COMMAND.md
+FINAL_FIX_SIMPLE.md
+NEXT_ACTIONS.md
+RECOVERY_STATUS_REPORT.md
+RUN_THIS_COMMAND.md
+START_HERE.md
+START_TRAINING.bat
+TRAINING_READY.md
+run_training_safe.py
+start_training.py
+CHANGES_LOG.md
+CONTINUATION_STATUS.md
+NEXT_STEPS.md
+
+# Old backup directories
+checkpoints_old_*/
+
+# System files
+nul
+
+# Claude local settings
+.claude/settings.local.json
+

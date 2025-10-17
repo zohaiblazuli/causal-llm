@@ -4,15 +4,14 @@
 
 # Model Configuration
 model:
-  # Base model selection
-  # Using non-instruct variant per user request (RTX 3060 12GB)
-  name: "meta-llama/Llama-3.1-8B"
+  # Base model selection - SWITCHED TO SMALLER MODEL FOR SPEED
+  name: "meta-llama/Llama-3.2-3B-Instruct"  # MUCH faster - only uses 2-3GB!
 
-  # Alternative options (uncomment to use):
-  # name: "meta-llama/Llama-4-Scout-17B-16E-Instruct"  # Bold - state-of-the-art, requires 10-11GB
-  # name: "meta-llama/Llama-3.2-3B-Instruct"  # Lightweight - only 2-3GB, fast training
-  # name: "meta-llama/Meta-Llama-3-8B-Instruct"  # Llama 3 (older than 3.1)
-  # name: "meta-llama/Llama-2-7b-hf"  # Original baseline for comparison
+  # Alternative options:
+  # name: "meta-llama/Llama-3.1-8B"  # TOO SLOW on RTX 3060 12GB
+  # name: "meta-llama/Llama-4-Scout-17B-16E-Instruct"  # Way too big
+  # name: "meta-llama/Meta-Llama-3-8B-Instruct"  # Still too big
+  # name: "meta-llama/Llama-2-7b-hf"  # Older, still slower than 3.2-3B
 
   # 4-bit quantization (memory efficiency for RTX 3060 12GB)
   load_in_4bit: true
@@ -24,8 +23,8 @@ model:
   device_map: "auto"  # Automatic device placement
   trust_remote_code: true
 
-  # Max sequence length (shorter = less memory)
-  max_seq_length: 1024  # Reduced from 2048 for 6GB VRAM safety
+  # Max sequence length (SAFE for RTX 3060 12GB)
+  max_seq_length: 512  # Reduced to avoid OOM - training was using 98% VRAM!
 
 # LoRA Configuration (Parameter-Efficient Fine-Tuning)
 lora:
@@ -51,10 +50,10 @@ lora:
 
 # Training Hyperparameters
 training:
-  # Batch size configuration (CRITICAL for memory)
-  per_device_train_batch_size: 1  # Must be 1 for 6GB VRAM
+  # Batch size configuration (OPTIMIZED for 3B model)
+  per_device_train_batch_size: 1  # Keep at 1 for stability
   per_device_eval_batch_size: 1
-  gradient_accumulation_steps: 16  # Effective batch size = 16
+  gradient_accumulation_steps: 8  # Restored to 8 - 3B can handle it, effective batch = 8
 
   # Training duration
   num_epochs: 3
@@ -83,29 +82,29 @@ training:
   gradient_checkpointing: true  # Trade compute for memory
   optim: "paged_adamw_8bit"
 
-  # Data loading
-  dataloader_num_workers: 2  # Adjust based on CPU cores
+  # Data loading (OPTIMIZED for speed)
+  dataloader_num_workers: 4  # Increased for faster data loading
   dataloader_pin_memory: true
-  dataloader_prefetch_factor: 2
+  dataloader_prefetch_factor: 4  # Increased prefetch for better GPU utilization
 
-  # Evaluation
-  evaluation_strategy: "steps"  # "no", "steps", or "epoch"
-  eval_steps: 200
-  save_strategy: "steps"
-  save_steps: 200
-  save_total_limit: 3  # Keep only 3 best checkpoints
+  # Evaluation (OPTIMIZED for speed - less frequent saves)
+  evaluation_strategy: "epoch"  # Evaluate only at epoch end for speed
+  eval_steps: 500  # Backup if evaluation_strategy changes
+  save_strategy: "epoch"  # Save only at epoch end
+  save_steps: 500
+  save_total_limit: 2  # Keep only 2 checkpoints to save disk I/O
   load_best_model_at_end: true
   metric_for_best_model: "causal_stability"
   greater_is_better: true
 
-  # Early stopping
-  early_stopping_patience: 5  # Stop if no improvement for 5 eval steps
+  # Early stopping (DISABLED for unattended training)
+  early_stopping_patience: 999  # Effectively disabled - train all 3 epochs
   early_stopping_threshold: 0.001
 
-  # Logging
-  logging_steps: 10
+  # Logging (OPTIMIZED for speed)
+  logging_steps: 50  # Less frequent logging for speed
   logging_first_step: true
-  report_to: ["wandb"]  # "wandb", "tensorboard", or "none"
+  report_to: []  # Disabled for speed (no wandb/tensorboard overhead)
 
   # Seed for reproducibility
   seed: 42
@@ -115,14 +114,14 @@ training:
   remove_unused_columns: false
   ddp_find_unused_parameters: false
 
-# Loss Configuration (Causal Contrastive Loss)
+# Loss Configuration (FULL CAUSAL LOSS - 3B model can handle it!)
 loss:
-  type: "causal_contrastive"  # or "infonce", "triplet"
+  type: "causal_contrastive"  # Full causal contrastive loss
 
-  # Loss weights
+  # Loss weights (RESTORED - 3B model has enough headroom)
   lambda_task: 1.0  # Weight for task loss (standard LM loss)
-  lambda_causal: 0.5  # Weight for causal stability
-  lambda_spurious: 0.5  # Weight for spurious separation
+  lambda_causal: 0.5  # ENABLED - causal stability term
+  lambda_spurious: 0.5  # ENABLED - spurious separation term
 
   # Contrastive learning
   temperature: 0.07  # Temperature scaling
@@ -138,9 +137,9 @@ data:
   val_path: "data/processed/val_split.jsonl"
   test_path: "data/processed/test_split.jsonl"
 
-  # Data processing
-  max_length: 1024  # Maximum sequence length (reduced from 2048)
-  padding: "max_length"  # "max_length" or "longest"
+  # Data processing (SAFE - reduced to avoid OOM)
+  max_length: 512  # Reduced to avoid OOM (was using 98% VRAM at 768!)
+  padding: "max_length"  # Fixed padding to avoid batch size mismatches
   truncation: true
 
   # Cache
@@ -198,14 +197,14 @@ hardware:
   vram_gb: 12
   cuda_device: 0
 
-  # Memory management
-  empty_cache_steps: 50  # Clear CUDA cache every N steps
+  # Memory management (OPTIMIZED for RTX 3060)
+  empty_cache_steps: 100  # Less frequent cache clearing for speed
   max_memory_allocated_gb: 11.0  # Leave headroom for 12GB VRAM
 
-  # Performance tuning
-  use_flash_attention: false  # Enable if flash-attn installed
-  use_triton: false
-  compile_model: false  # torch.compile - experimental
+  # Performance tuning (OPTIMIZED)
+  use_flash_attention: false  # Not installed, keep false
+  use_triton: false  # Not needed for single GPU
+  compile_model: false  # Causes issues, keep false
 
 # Advanced Settings
 advanced:
@@ -223,6 +222,6 @@ advanced:
   # DeepSpeed (alternative to FSDP)
   deepspeed: null  # Path to deepspeed config, or null
 
-  # Torch settings
+  # Torch settings (OPTIMIZED for RTX 3060)
   torch_dtype: "auto"  # "auto", "float16", "bfloat16", "float32"
-  attn_implementation: "eager"  # "eager", "sdpa", "flash_attention_2"
+  attn_implementation: "sdpa"  # Use PyTorch's scaled_dot_product_attention (faster)

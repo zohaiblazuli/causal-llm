@@ -6,7 +6,12 @@
       "Bash(dir:*)",
       "Bash(test:*)",
       "Bash(python:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(nvidia-smi:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
