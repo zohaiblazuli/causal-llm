@@ -205,10 +205,11 @@ class ModelCheckpoint(Callback):
             )
             print(f"Causal projection saved to {checkpoint_path / 'causal_projection.pt'}")
 
-        # Save trainer state
+        # Save trainer state (including batch_idx for precise resumption)
         torch.save({
             "epoch": trainer.current_epoch,
             "global_step": trainer.global_step,
+            "batch_idx": trainer.current_batch_idx,  # Added for within-epoch resumption
             "best_metric": self.best_value,
             "optimizer_state": trainer.optimizer.state_dict(),
             "scheduler_state": trainer.scheduler.state_dict() if trainer.scheduler else None

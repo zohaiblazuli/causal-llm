@@ -80,7 +80,12 @@ class CausalTrainer:
         # Training state
         self.current_epoch = 0
         self.global_step = 0
+        self.current_batch_idx = 0  # Track current batch for checkpointing
         self.should_stop = False
+
+        # Resume tracking (set by load_checkpoint)
+        self.resumed_epoch = 0
+        self.resumed_batch_idx = 0
 
         # Training config
         self.num_epochs = self.config.get("training", {}).get("num_epochs", 3)
@@ -136,7 +141,8 @@ class CausalTrainer:
             callback.on_train_begin(self)
 
         try:
-            for epoch in range(self.num_epochs):
+            # Resume from saved epoch if checkpoint was loaded
+            for epoch in range(self.current_epoch, self.num_epochs):
                 if self.should_stop:
                     print("Early stopping triggered")
                     break
@@ -187,6 +193,23 @@ class CausalTrainer:
         pbar = tqdm(self.train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}")
 
         for batch_idx, batch in enumerate(pbar):
+            # Update current batch index for checkpointing
+            self.current_batch_idx = batch_idx
+
+            # Skip batches if resuming from checkpoint within the same epoch
+            # Calculate batch position from global_step if resuming
+            if epoch == self.resumed_epoch and self.resumed_batch_idx > 0:
+                # Calculate expected batch_idx from global_step
+                # Each gradient accumulation cycle processes gradient_accumulation_steps batches
+                expected_batch_idx = self.resumed_batch_idx
+                if batch_idx < expected_batch_idx:
+                    # Skip this batch as it was already processed
+                    continue
+                elif batch_idx == expected_batch_idx:
+                    print(f"Resuming training from batch {batch_idx} (step {self.global_step})")
+                    # Reset resume tracking so we don't skip anymore
+                    self.resumed_batch_idx = 0
+
             # Trigger callbacks
             for callback in self.callbacks:
                 callback.on_step_begin(self, self.global_step)
@@ -564,23 +587,37 @@ class CausalTrainer:
             else:
                 print("Warning: causal_projection.pt not found in checkpoint")
 
-        # Load training state
-        training_state_path = checkpoint_path / "training_state.pt"
-        if training_state_path.exists():
-            training_state = torch.load(training_state_path)
+        # Load training state (saved by callbacks as trainer_state.pt)
+        trainer_state_path = checkpoint_path / "trainer_state.pt"
+        if trainer_state_path.exists():
+            trainer_state = torch.load(trainer_state_path, map_location=self.device)
 
-            self.current_epoch = training_state.get("epoch", 0)
-            self.global_step = training_state.get("global_step", 0)
+            self.current_epoch = trainer_state.get("epoch", 0)
+            self.global_step = trainer_state.get("global_step", 0)
 
-            if self.optimizer and "optimizer_state" in training_state:
-                self.optimizer.load_state_dict(training_state["optimizer_state"])
+            # Set resume tracking for within-epoch resumption
+            self.resumed_epoch = self.current_epoch
+            # Calculate batch_idx from global_step if not saved directly
+            if "batch_idx" in trainer_state:
+                self.resumed_batch_idx = trainer_state["batch_idx"]
+            else:
+                # Calculate from global_step: each step represents gradient_accumulation_steps batches
+                # For within-epoch resumption, we need the batch index within the current epoch
+                batches_per_epoch = len(self.train_dataloader)
+                total_batches = self.global_step * self.gradient_accumulation_steps
+                # If we're still in the first epoch (or any incomplete epoch), don't use modulo
+                batches_before_current_epoch = self.current_epoch * batches_per_epoch
+                self.resumed_batch_idx = total_batches - batches_before_current_epoch
 
-            if self.scheduler and "scheduler_state" in training_state:
-                self.scheduler.load_state_dict(training_state["scheduler_state"])
+            if self.optimizer and "optimizer_state" in trainer_state:
+                self.optimizer.load_state_dict(trainer_state["optimizer_state"])
 
-            print(f"Resumed from epoch {self.current_epoch}, step {self.global_step}")
+            if self.scheduler and "scheduler_state" in trainer_state:
+                self.scheduler.load_state_dict(trainer_state["scheduler_state"])
+
+            print(f"Resumed from epoch {self.current_epoch}, step {self.global_step}, batch {self.resumed_batch_idx}")
         else:
-            print("Warning: training_state.pt not found, starting fresh")
+            print("Warning: trainer_state.pt not found, starting fresh")
 
 
 if __name__ == "__main__":
