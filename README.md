@@ -90,26 +90,51 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ## Quick Start
 
-```bash
-# Generate training data
-python data/scripts/generate_counterfactuals.py
+### For VPS/Cloud GPU (Recommended - A100/V100):
+**See [VPS_TRAINING_GUIDE.md](VPS_TRAINING_GUIDE.md) for detailed instructions**
 
-# Train causal model
+```bash
+# Clone repository
+git clone https://github.com/zohaiblazuli/causal-llm.git
+cd causal-llm
+
+# Setup environment
+pip install -r requirements.txt
+huggingface-cli login  # Paste token from https://huggingface.co/settings/tokens
+
+# Train (10-20 minutes on A100)
 python training/train.py --config training/config.yaml
 
-# Evaluate on benchmark
-python evaluation/benchmark.py --model-path checkpoints/best_model
-
-# Run verification tests
-python verification/causal_discovery.py --model-path checkpoints/best_model
+# Evaluate
+python evaluation/benchmark.py --model checkpoints/best_model
 ```
+
+### For Local GPU (RTX 3060/4090):
+```bash
+# Same as above, training will take 30-45 minutes
+python training/train.py --config training/config.yaml
+```
+
+**Note**: Dataset already included (8,939 examples in `data/processed/`)!
 
 ## Hardware Requirements
 
-- **Minimum**: RTX 4050 (6GB VRAM) with 4-bit quantization + LoRA
-- **Recommended**: RTX 4090 (24GB VRAM) or cloud GPU (Lambda Labs, vast.ai)
-- **CPU**: 8+ cores recommended for data generation
+### For Training:
+- **Optimal**: A100 (40GB) - 10-15 min training ✅
+- **Great**: V100 (32GB) or RTX 4090 (24GB) - 15-20 min
+- **Good**: RTX 3060 (12GB) - 30-45 min (current config optimized for this)
+- **Minimum**: RTX 3060 (12GB VRAM) with 4-bit quantization + LoRA
+
+### System:
+- **CPU**: 4+ cores
 - **RAM**: 16GB minimum, 32GB recommended
+- **Disk**: 50GB (for model cache + checkpoints)
+- **CUDA**: 11.8+
+
+### Cost Estimate (VPS):
+- **RunPod A100**: ~$0.50/hour → **~$0.15 total** for this training
+- **Lambda Labs A100**: ~$1.10/hour → **~$0.30 total**
+- **Vast.ai**: ~$0.30-0.80/hour → **~$0.10-0.25 total**
 
 ## Key Results (Target)
 
