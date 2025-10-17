@@ -93,6 +93,7 @@ class CausalTrainer:
         self.max_grad_norm = self.config.get("training", {}).get("max_grad_norm", 1.0)
         self.logging_steps = self.config.get("training", {}).get("logging_steps", 10)
         self.eval_steps = self.config.get("training", {}).get("eval_steps", 200)
+        self.evaluation_strategy = self.config.get("training", {}).get("evaluation_strategy", "steps")
         self.fp16 = self.config.get("training", {}).get("fp16", False)
         self.bf16 = self.config.get("training", {}).get("bf16", True)
 
@@ -189,8 +190,17 @@ class CausalTrainer:
         }
         num_batches = 0
 
-        # Progress bar
-        pbar = tqdm(self.train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}")
+        # Progress bar (adjust initial position if resuming mid-epoch)
+        if epoch == self.resumed_epoch and self.resumed_batch_idx > 0:
+            # Set initial position to show correct progress when resuming
+            pbar = tqdm(
+                self.train_dataloader,
+                desc=f"Epoch {epoch + 1}/{self.num_epochs}",
+                initial=self.resumed_batch_idx,
+                total=len(self.train_dataloader)
+            )
+        else:
+            pbar = tqdm(self.train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}")
 
         for batch_idx, batch in enumerate(pbar):
             # Update current batch index for checkpointing
@@ -204,13 +214,14 @@ class CausalTrainer:
                 expected_batch_idx = self.resumed_batch_idx
                 if batch_idx < expected_batch_idx:
                     # Skip this batch as it was already processed
+                    # Don't trigger callbacks or accumulate metrics for skipped batches
                     continue
                 elif batch_idx == expected_batch_idx:
                     print(f"Resuming training from batch {batch_idx} (step {self.global_step})")
                     # Reset resume tracking so we don't skip anymore
                     self.resumed_batch_idx = 0
 
-            # Trigger callbacks
+            # Trigger callbacks (only for non-skipped batches)
             for callback in self.callbacks:
                 callback.on_step_begin(self, self.global_step)
 
@@ -243,8 +254,11 @@ class CausalTrainer:
                 for callback in self.callbacks:
                     callback.on_step_end(self, self.global_step, log_metrics)
 
-            # Validation
-            if self.val_dataloader and self.global_step > 0 and self.global_step % self.eval_steps == 0:
+            # Validation (only if evaluation_strategy is "steps", not "epoch")
+            if (self.val_dataloader and
+                self.evaluation_strategy == "steps" and
+                self.global_step > 0 and
+                self.global_step % self.eval_steps == 0):
                 val_metrics = self.validate()
 
                 # Trigger callbacks
