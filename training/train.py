@@ -94,6 +94,12 @@ def parse_args():
         help="Profile memory usage during training"
     )
 
+    parser.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Force fresh training, ignore existing checkpoints"
+    )
+
     return parser.parse_args()
 
 
@@ -498,10 +504,63 @@ def main():
         device="cuda" if torch.cuda.is_available() else "cpu"
     )
 
-    # Resume from checkpoint if specified
+    # Auto-resume logic (default: ON)
     if args.resume:
-        print(f"\nResuming from checkpoint: {args.resume}")
+        # Explicit checkpoint specified
+        print(f"\nResuming from explicit checkpoint: {args.resume}")
         trainer.load_checkpoint(args.resume)
+    elif not args.no_resume:
+        # Auto-detect latest checkpoint (DEFAULT BEHAVIOR)
+        checkpoint_dir = Path(config["checkpointing"]["output_dir"])
+
+        if checkpoint_dir.exists():
+            # Find all valid checkpoints
+            potential_checkpoints = []
+
+            # Check for checkpoint-* directories
+            for cp in checkpoint_dir.glob("checkpoint-*"):
+                if (cp / "trainer_state.pt").exists():
+                    potential_checkpoints.append(cp)
+
+            # Check for best_model
+            best_model_path = checkpoint_dir / "best_model"
+            if best_model_path.exists() and (best_model_path / "trainer_state.pt").exists():
+                potential_checkpoints.append(best_model_path)
+
+            if potential_checkpoints:
+                # Sort by modification time (most recent first)
+                latest_checkpoint = max(potential_checkpoints, key=lambda p: (p / "trainer_state.pt").stat().st_mtime)
+
+                # Check if training was already completed
+                trainer_state = torch.load(latest_checkpoint / "trainer_state.pt", map_location="cpu")
+                completed_epoch = trainer_state.get("epoch", 0)
+                completed_step = trainer_state.get("global_step", 0)
+                num_epochs = config["training"]["num_epochs"]
+
+                # Check if this is the last epoch AND we're past the last step
+                total_steps = len(train_dataloader) // config["training"]["gradient_accumulation_steps"] * num_epochs
+
+                if completed_epoch >= num_epochs - 1 and completed_step >= total_steps - 10:
+                    print(f"\n{'='*80}")
+                    print("TRAINING ALREADY COMPLETED")
+                    print(f"{'='*80}")
+                    print(f"Completed: {completed_epoch + 1}/{num_epochs} epochs, {completed_step} steps")
+                    print("\nTo start fresh training, use: --no-resume")
+                    print(f"{'='*80}\n")
+                    return  # Exit without training
+                else:
+                    print(f"\n{'='*80}")
+                    print("AUTO-RESUME DETECTED")
+                    print(f"{'='*80}")
+                    print(f"Latest checkpoint: {latest_checkpoint.name}")
+                    print(f"Progress: Epoch {completed_epoch + 1}/{num_epochs}, Step {completed_step}")
+                    print(f"Remaining: {num_epochs - completed_epoch - 1} epochs + partial epoch")
+                    print(f"{'='*80}\n")
+                    trainer.load_checkpoint(str(latest_checkpoint))
+            else:
+                print("\nNo valid checkpoints found, starting fresh training")
+    else:
+        print("\n--no-resume flag detected, starting fresh training")
 
     # Start training
     print("\n" + "="*80)

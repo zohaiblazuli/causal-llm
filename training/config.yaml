@@ -1,37 +1,32 @@
 # Training Configuration for Causal LLM Fine-tuning
-# Optimized for RTX 3060 (12GB VRAM) - Updated October 2025
+# Optimized for RTX 4090 (24GB VRAM) - October 2025
 # Target: ISEF 2026 (May 2026)
+# VRAM Usage Target: 60-65% (~14-16GB / 24GB)
 
 # Model Configuration
 model:
-  # Base model selection - SWITCHED TO SMALLER MODEL FOR SPEED
-  name: "meta-llama/Llama-3.2-3B-Instruct"  # MUCH faster - only uses 2-3GB!
+  # Base model selection
+  name: "meta-llama/Llama-3.2-3B-Instruct"
 
-  # Alternative options:
-  # name: "meta-llama/Llama-3.1-8B"  # TOO SLOW on RTX 3060 12GB
-  # name: "meta-llama/Llama-4-Scout-17B-16E-Instruct"  # Way too big
-  # name: "meta-llama/Meta-Llama-3-8B-Instruct"  # Still too big
-  # name: "meta-llama/Llama-2-7b-hf"  # Older, still slower than 3.2-3B
-
-  # 4-bit quantization (memory efficiency for RTX 3060 12GB)
+  # 4-bit quantization (memory efficiency)
   load_in_4bit: true
-  bnb_4bit_compute_dtype: "bfloat16"  # or "float16" if bfloat16 not supported
-  bnb_4bit_use_double_quant: true  # Double quantization for extra memory savings
-  bnb_4bit_quant_type: "nf4"  # NormalFloat4 - best for pretrained models
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_quant_type: "nf4"
 
   # Device configuration
-  device_map: "auto"  # Automatic device placement
+  device_map: "auto"
   trust_remote_code: true
 
-  # Max sequence length (SAFE for RTX 3060 12GB)
-  max_seq_length: 512  # Reduced to avoid OOM - training was using 98% VRAM!
+  # Max sequence length (INCREASED for RTX 4090)
+  max_seq_length: 768  # Was 512 on RTX 3060
 
 # LoRA Configuration (Parameter-Efficient Fine-Tuning)
 lora:
   # Core LoRA parameters
-  r: 16  # Rank: 8 for minimal, 16 for balanced, 32 for high capacity
-  alpha: 32  # Scaling factor (typically 2x rank)
-  dropout: 0.05  # Regularization
+  r: 16
+  alpha: 32
+  dropout: 0.05
 
   # Target modules for Llama architecture
   target_modules:
@@ -44,67 +39,67 @@ lora:
     - "down_proj"
 
   # LoRA settings
-  bias: "none"  # Don't train biases
+  bias: "none"
   task_type: "CAUSAL_LM"
-  modules_to_save: []  # Additional modules to train (empty for max efficiency)
+  modules_to_save: []
 
 # Training Hyperparameters
 training:
-  # Batch size configuration (OPTIMIZED for 3B model)
-  per_device_train_batch_size: 1  # Keep at 1 for stability
-  per_device_eval_batch_size: 1
-  gradient_accumulation_steps: 8  # Restored to 8 - 3B can handle it, effective batch = 8
+  # Batch size configuration (OPTIMIZED for RTX 4090)
+  per_device_train_batch_size: 2  # INCREASED from 1
+  per_device_eval_batch_size: 2   # INCREASED from 1
+  gradient_accumulation_steps: 8  # Effective batch = 16
 
   # Training duration
   num_epochs: 3
-  max_steps: -1  # -1 means train for num_epochs, or set explicit step count
+  max_steps: -1
 
   # Learning rate and scheduling
-  learning_rate: 2.0e-4  # Typical for LoRA: 1e-4 to 5e-4
-  lr_scheduler_type: "cosine"  # "linear", "cosine", "constant_with_warmup"
-  warmup_ratio: 0.03  # 3% warmup
-  warmup_steps: 0  # Use warmup_ratio instead
+  learning_rate: 2.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.03
+  warmup_steps: 0
 
   # Optimization
-  optimizer: "paged_adamw_8bit"  # Memory-efficient optimizer (bitsandbytes)
+  optimizer: "paged_adamw_8bit"
   weight_decay: 0.01
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_epsilon: 1.0e-8
-  max_grad_norm: 1.0  # Gradient clipping
+  max_grad_norm: 1.0
 
   # Mixed precision training (CRITICAL for memory and speed)
-  fp16: false  # Set true if bf16 not supported
-  bf16: true   # Preferred on modern GPUs (Ampere+)
-  tf32: true   # TensorFloat32 for faster matmul on Ampere+
+  fp16: false
+  bf16: true
+  tf32: true
 
   # Memory optimizations
-  gradient_checkpointing: true  # Trade compute for memory
+  gradient_checkpointing: true
   optim: "paged_adamw_8bit"
 
-  # Data loading (OPTIMIZED for speed)
-  dataloader_num_workers: 4  # Increased for faster data loading
+  # Data loading (OPTIMIZED for RTX 4090)
+  dataloader_num_workers: 8  # INCREASED from 4
   dataloader_pin_memory: true
-  dataloader_prefetch_factor: 4  # Increased prefetch for better GPU utilization
+  dataloader_prefetch_factor: 8  # INCREASED from 4
 
-  # Evaluation (OPTIMIZED for speed - less frequent saves)
-  evaluation_strategy: "epoch"  # Evaluate only at epoch end for speed
-  eval_steps: 500  # Backup if evaluation_strategy changes
-  save_strategy: "epoch"  # Save only at epoch end
-  save_steps: 500
-  save_total_limit: 2  # Keep only 2 checkpoints to save disk I/O
+  # Evaluation (CRITICAL: EPOCH-ONLY to prevent validation bug)
+  evaluation_strategy: "epoch"  # ← MUST BE "epoch"
+  eval_steps: 999999  # ← Safety: Set impossibly high to prevent mid-epoch validation
+  save_strategy: "steps"  # Save checkpoints during training for auto-resume
+  save_steps: 200  # Save every 200 steps (more frequent for VPS disconnects)
+  save_total_limit: 3  # Keep last 3 checkpoints
   load_best_model_at_end: true
   metric_for_best_model: "causal_stability"
   greater_is_better: true
 
   # Early stopping (DISABLED for unattended training)
-  early_stopping_patience: 999  # Effectively disabled - train all 3 epochs
+  early_stopping_patience: 999
   early_stopping_threshold: 0.001
 
-  # Logging (OPTIMIZED for speed)
-  logging_steps: 50  # Less frequent logging for speed
+  # Logging
+  logging_steps: 50
   logging_first_step: true
-  report_to: []  # Disabled for speed (no wandb/tensorboard overhead)
+  report_to: []
 
   # Seed for reproducibility
   seed: 42
@@ -114,21 +109,21 @@ training:
   remove_unused_columns: false
   ddp_find_unused_parameters: false
 
-# Loss Configuration (FULL CAUSAL LOSS - 3B model can handle it!)
+# Loss Configuration (FULL CAUSAL LOSS)
 loss:
-  type: "causal_contrastive"  # Full causal contrastive loss
+  type: "causal_contrastive"
 
-  # Loss weights (RESTORED - 3B model has enough headroom)
-  lambda_task: 1.0  # Weight for task loss (standard LM loss)
-  lambda_causal: 0.5  # ENABLED - causal stability term
-  lambda_spurious: 0.5  # ENABLED - spurious separation term
+  # Loss weights
+  lambda_task: 1.0
+  lambda_causal: 0.5
+  lambda_spurious: 0.5
 
   # Contrastive learning
-  temperature: 0.07  # Temperature scaling
-  similarity_metric: "cosine"  # "cosine" or "dot_product"
+  temperature: 0.07
+  similarity_metric: "cosine"
 
   # Task loss
-  label_smoothing: 0.0  # Label smoothing (0.0 = disabled)
+  label_smoothing: 0.0
 
 # Data Configuration
 data:
@@ -137,9 +132,9 @@ data:
   val_path: "data/processed/val_split.jsonl"
   test_path: "data/processed/test_split.jsonl"
 
-  # Data processing (SAFE - reduced to avoid OOM)
-  max_length: 512  # Reduced to avoid OOM (was using 98% VRAM at 768!)
-  padding: "max_length"  # Fixed padding to avoid batch size mismatches
+  # Data processing (INCREASED for RTX 4090)
+  max_length: 768  # Was 512 on RTX 3060
+  padding: "max_length"
   truncation: true
 
   # Cache
@@ -147,24 +142,24 @@ data:
   cache_dir: "data/cache"
 
   # Data validation
-  min_length: 10  # Minimum sequence length
-  max_samples: -1  # -1 for all samples, or limit for debugging
+  min_length: 10
+  max_samples: -1
 
 # Checkpointing
 checkpointing:
   output_dir: "checkpoints"
-  resume_from_checkpoint: null  # Path to checkpoint, or null
-  save_safetensors: true  # Use safetensors format
+  resume_from_checkpoint: null
+  save_safetensors: true
 
 # Weights & Biases Configuration
 wandb:
   enabled: false
   project: "isef-causal-llm"
-  entity: null  # Your W&B username/org
-  name: null  # Run name (auto-generated if null)
-  tags: ["llama", "lora", "causal-contrastive", "rtx3060", "isef2026"]
-  notes: "ISEF 2026: Fine-tuning Llama 3.2-8B with causal contrastive loss for provably safe LLM agents"
-  group: null  # Group name for related runs
+  entity: null
+  name: null
+  tags: ["llama", "lora", "causal-contrastive", "rtx4090", "isef2026"]
+  notes: "ISEF 2026: RTX 4090 optimized training with auto-resume"
+  group: null
 
 # Validation and Testing
 validation:
@@ -189,27 +184,27 @@ debug:
   memory_snapshot_path: "memory_snapshots"
 
   # Detect anomalies
-  detect_anomaly: false  # Slower but helps debug NaN/Inf
+  detect_anomaly: false
 
-# Hardware-Specific Settings for RTX 3060
+# Hardware-Specific Settings for RTX 4090
 hardware:
-  gpu_name: "RTX 3060"
-  vram_gb: 12
+  gpu_name: "RTX 4090"
+  vram_gb: 24
   cuda_device: 0
 
-  # Memory management (OPTIMIZED for RTX 3060)
-  empty_cache_steps: 100  # Less frequent cache clearing for speed
-  max_memory_allocated_gb: 11.0  # Leave headroom for 12GB VRAM
+  # Memory management (OPTIMIZED for RTX 4090)
+  empty_cache_steps: 50  # DECREASED from 100 (4090 is faster)
+  max_memory_allocated_gb: 16.0  # Target ~67% utilization, not 100%
 
-  # Performance tuning (OPTIMIZED)
-  use_flash_attention: false  # Not installed, keep false
-  use_triton: false  # Not needed for single GPU
-  compile_model: false  # Causes issues, keep false
+  # Performance tuning
+  use_flash_attention: false
+  use_triton: false
+  compile_model: false
 
 # Advanced Settings
 advanced:
   # Gradient accumulation strategy
-  gradient_accumulation_strategy: "steps"  # "steps" or "batch"
+  gradient_accumulation_strategy: "steps"
 
   # DDP (Distributed Data Parallel) settings
   ddp_backend: "nccl"
@@ -220,8 +215,8 @@ advanced:
   fsdp_config: null
 
   # DeepSpeed (alternative to FSDP)
-  deepspeed: null  # Path to deepspeed config, or null
+  deepspeed: null
 
-  # Torch settings (OPTIMIZED for RTX 3060)
-  torch_dtype: "auto"  # "auto", "float16", "bfloat16", "float32"
-  attn_implementation: "sdpa"  # Use PyTorch's scaled_dot_product_attention (faster)
+  # Torch settings (OPTIMIZED for RTX 4090)
+  torch_dtype: "auto"
+  attn_implementation: "sdpa"

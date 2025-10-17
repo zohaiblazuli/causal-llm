@@ -94,6 +94,14 @@ class CausalTrainer:
         self.logging_steps = self.config.get("training", {}).get("logging_steps", 10)
         self.eval_steps = self.config.get("training", {}).get("eval_steps", 200)
         self.evaluation_strategy = self.config.get("training", {}).get("evaluation_strategy", "steps")
+
+        # CRITICAL SAFETY: Disable step-based validation if strategy is "epoch"
+        if self.evaluation_strategy == "epoch":
+            self.eval_steps = float('inf')  # Will never trigger mid-epoch validation
+            print("✓ Validation strategy: EPOCH-ONLY (no mid-epoch validation)")
+        elif self.evaluation_strategy == "steps":
+            print(f"✓ Validation strategy: STEPS (every {self.eval_steps} steps)")
+
         self.fp16 = self.config.get("training", {}).get("fp16", False)
         self.bf16 = self.config.get("training", {}).get("bf16", True)
 
@@ -207,18 +215,17 @@ class CausalTrainer:
             self.current_batch_idx = batch_idx
 
             # Skip batches if resuming from checkpoint within the same epoch
-            # Calculate batch position from global_step if resuming
             if epoch == self.resumed_epoch and self.resumed_batch_idx > 0:
-                # Calculate expected batch_idx from global_step
-                # Each gradient accumulation cycle processes gradient_accumulation_steps batches
                 expected_batch_idx = self.resumed_batch_idx
                 if batch_idx < expected_batch_idx:
-                    # Skip this batch as it was already processed
+                    # CRITICAL: Update progress bar for skipped batches
+                    pbar.update(1)
                     # Don't trigger callbacks or accumulate metrics for skipped batches
                     continue
                 elif batch_idx == expected_batch_idx:
-                    print(f"Resuming training from batch {batch_idx} (step {self.global_step})")
-                    # Reset resume tracking so we don't skip anymore
+                    print(f"\n{'='*60}")
+                    print(f"RESUMING: Batch {batch_idx} | Step {self.global_step}")
+                    print(f"{'='*60}\n")
                     self.resumed_batch_idx = 0
 
             # Trigger callbacks (only for non-skipped batches)
@@ -555,7 +562,7 @@ class CausalTrainer:
 
     def save_model(self, output_dir: Optional[str] = None):
         """
-        Save model checkpoint.
+        Save model checkpoint with ALL state.
 
         Args:
             output_dir: Directory to save to (defaults to self.output_dir)
@@ -567,15 +574,23 @@ class CausalTrainer:
         self.model.save_pretrained(save_dir)
         self.tokenizer.save_pretrained(save_dir)
 
-        # Save training state
+        # Save causal projection
+        if hasattr(self.model, 'causal_projection'):
+            torch.save(
+                self.model.causal_projection.state_dict(),
+                save_dir / "causal_projection.pt"
+            )
+
+        # Save COMPLETE training state (use trainer_state.pt for consistency)
         torch.save({
             "epoch": self.current_epoch,
             "global_step": self.global_step,
+            "batch_idx": self.current_batch_idx,
             "optimizer_state": self.optimizer.state_dict() if self.optimizer else None,
             "scheduler_state": self.scheduler.state_dict() if self.scheduler else None
-        }, save_dir / "training_state.pt")
+        }, save_dir / "trainer_state.pt")
 
-        print(f"Model saved to {save_dir}")
+        print(f"✓ Complete checkpoint saved to {save_dir}")
 
     def load_checkpoint(self, checkpoint_dir: str):
         """
