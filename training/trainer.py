@@ -306,55 +306,64 @@ class CausalTrainer:
 
         # Forward pass with mixed precision
         with autocast(device_type=self.device, dtype=self.amp_dtype, enabled=self.use_amp):
-            # Get representations and logits for all three inputs
-            # Benign
-            outputs_benign = self.model(
-                input_ids=batch["benign_input_ids"],
-                attention_mask=batch["benign_attention_mask"],
+            # OPTIMIZATION: Batch all 3 inputs into single forward pass (3x speedup!)
+            # Stack inputs: [batch_size * 3, seq_len]
+            batch_size = batch["benign_input_ids"].size(0)
+
+            combined_input_ids = torch.cat([
+                batch["benign_input_ids"],
+                batch["benign_cf_input_ids"],
+                batch["injection_input_ids"]
+            ], dim=0)
+
+            combined_attention_mask = torch.cat([
+                batch["benign_attention_mask"],
+                batch["benign_cf_attention_mask"],
+                batch["injection_attention_mask"]
+            ], dim=0)
+
+            # Single forward pass for all 3 inputs
+            combined_outputs = self.model(
+                input_ids=combined_input_ids,
+                attention_mask=combined_attention_mask,
                 output_hidden_states=True
             )
-            hidden_states_benign = outputs_benign.hidden_states[-1]
-            # Pool with attention mask
+
+            # Split outputs back into 3 parts
+            hidden_states_combined = combined_outputs.hidden_states[-1]
+            logits_combined = combined_outputs.logits
+
+            hidden_states_benign = hidden_states_combined[:batch_size]
+            hidden_states_benign_cf = hidden_states_combined[batch_size:batch_size*2]
+            hidden_states_injection = hidden_states_combined[batch_size*2:]
+
+            logits_benign = logits_combined[:batch_size]
+
+            # Pool and project each representation
+            # Benign
             mask_expanded_benign = batch["benign_attention_mask"].unsqueeze(-1).expand(hidden_states_benign.size()).float()
             pooled_benign = (hidden_states_benign * mask_expanded_benign).sum(dim=1) / mask_expanded_benign.sum(dim=1).clamp(min=1e-9)
-            # Apply projection
             representation_benign = self.model.causal_projection(pooled_benign)
             benign_outputs = {
-                "logits": outputs_benign.logits,
+                "logits": logits_benign,
                 "representation": representation_benign
             }
 
             # Benign counterfactual
-            outputs_benign_cf = self.model(
-                input_ids=batch["benign_cf_input_ids"],
-                attention_mask=batch["benign_cf_attention_mask"],
-                output_hidden_states=True
-            )
-            hidden_states_benign_cf = outputs_benign_cf.hidden_states[-1]
-            # Pool with attention mask
             mask_expanded_benign_cf = batch["benign_cf_attention_mask"].unsqueeze(-1).expand(hidden_states_benign_cf.size()).float()
             pooled_benign_cf = (hidden_states_benign_cf * mask_expanded_benign_cf).sum(dim=1) / mask_expanded_benign_cf.sum(dim=1).clamp(min=1e-9)
-            # Apply projection
             representation_benign_cf = self.model.causal_projection(pooled_benign_cf)
             benign_cf_outputs = {
-                "logits": outputs_benign_cf.logits,
+                "logits": None,  # Don't need logits for counterfactual
                 "representation": representation_benign_cf
             }
 
             # Injection
-            outputs_injection = self.model(
-                input_ids=batch["injection_input_ids"],
-                attention_mask=batch["injection_attention_mask"],
-                output_hidden_states=True
-            )
-            hidden_states_injection = outputs_injection.hidden_states[-1]
-            # Pool with attention mask
             mask_expanded_injection = batch["injection_attention_mask"].unsqueeze(-1).expand(hidden_states_injection.size()).float()
             pooled_injection = (hidden_states_injection * mask_expanded_injection).sum(dim=1) / mask_expanded_injection.sum(dim=1).clamp(min=1e-9)
-            # Apply projection
             representation_injection = self.model.causal_projection(pooled_injection)
             injection_outputs = {
-                "logits": outputs_injection.logits,
+                "logits": None,  # Don't need logits for injection
                 "representation": representation_injection
             }
 
@@ -459,48 +468,60 @@ class CausalTrainer:
 
             # Forward pass
             with autocast(device_type=self.device, dtype=self.amp_dtype, enabled=self.use_amp):
-                # Get representations - Benign
-                outputs_benign = self.model(
-                    input_ids=batch["benign_input_ids"],
-                    attention_mask=batch["benign_attention_mask"],
+                # OPTIMIZATION: Batch all 3 inputs into single forward pass (3x speedup!)
+                batch_size = batch["benign_input_ids"].size(0)
+
+                combined_input_ids = torch.cat([
+                    batch["benign_input_ids"],
+                    batch["benign_cf_input_ids"],
+                    batch["injection_input_ids"]
+                ], dim=0)
+
+                combined_attention_mask = torch.cat([
+                    batch["benign_attention_mask"],
+                    batch["benign_cf_attention_mask"],
+                    batch["injection_attention_mask"]
+                ], dim=0)
+
+                # Single forward pass for all 3 inputs
+                combined_outputs = self.model(
+                    input_ids=combined_input_ids,
+                    attention_mask=combined_attention_mask,
                     output_hidden_states=True
                 )
-                hidden_states_benign = outputs_benign.hidden_states[-1]
+
+                # Split outputs back into 3 parts
+                hidden_states_combined = combined_outputs.hidden_states[-1]
+                logits_combined = combined_outputs.logits
+
+                hidden_states_benign = hidden_states_combined[:batch_size]
+                hidden_states_benign_cf = hidden_states_combined[batch_size:batch_size*2]
+                hidden_states_injection = hidden_states_combined[batch_size*2:]
+
+                logits_benign = logits_combined[:batch_size]
+
+                # Pool and project each representation
                 mask_expanded_benign = batch["benign_attention_mask"].unsqueeze(-1).expand(hidden_states_benign.size()).float()
                 pooled_benign = (hidden_states_benign * mask_expanded_benign).sum(dim=1) / mask_expanded_benign.sum(dim=1).clamp(min=1e-9)
                 representation_benign = self.model.causal_projection(pooled_benign)
                 benign_outputs = {
-                    "logits": outputs_benign.logits,
+                    "logits": logits_benign,
                     "representation": representation_benign
                 }
 
-                # Benign counterfactual
-                outputs_benign_cf = self.model(
-                    input_ids=batch["benign_cf_input_ids"],
-                    attention_mask=batch["benign_cf_attention_mask"],
-                    output_hidden_states=True
-                )
-                hidden_states_benign_cf = outputs_benign_cf.hidden_states[-1]
                 mask_expanded_benign_cf = batch["benign_cf_attention_mask"].unsqueeze(-1).expand(hidden_states_benign_cf.size()).float()
                 pooled_benign_cf = (hidden_states_benign_cf * mask_expanded_benign_cf).sum(dim=1) / mask_expanded_benign_cf.sum(dim=1).clamp(min=1e-9)
                 representation_benign_cf = self.model.causal_projection(pooled_benign_cf)
                 benign_cf_outputs = {
-                    "logits": outputs_benign_cf.logits,
+                    "logits": None,
                     "representation": representation_benign_cf
                 }
 
-                # Injection
-                outputs_injection = self.model(
-                    input_ids=batch["injection_input_ids"],
-                    attention_mask=batch["injection_attention_mask"],
-                    output_hidden_states=True
-                )
-                hidden_states_injection = outputs_injection.hidden_states[-1]
                 mask_expanded_injection = batch["injection_attention_mask"].unsqueeze(-1).expand(hidden_states_injection.size()).float()
                 pooled_injection = (hidden_states_injection * mask_expanded_injection).sum(dim=1) / mask_expanded_injection.sum(dim=1).clamp(min=1e-9)
                 representation_injection = self.model.causal_projection(pooled_injection)
                 injection_outputs = {
-                    "logits": outputs_injection.logits,
+                    "logits": None,
                     "representation": representation_injection
                 }
 
