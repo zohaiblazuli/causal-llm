@@ -421,7 +421,7 @@ def main():
 
     # Load configuration
     print("="*80)
-    print("CAUSAL LLM TRAINING - RTX 4050 Optimized")
+    print("CAUSAL LLM TRAINING - RTX 4090 Optimized")
     print("="*80)
 
     config = load_config(args.config)

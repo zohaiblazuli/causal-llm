@@ -3,7 +3,7 @@ Custom Trainer for Causal Contrastive Learning
 
 Implements training loop with:
 - Causal contrastive loss
-- Memory-efficient training for RTX 4050
+- Memory-efficient training for RTX 4090
 - Gradient accumulation
 - Mixed precision training
 - Checkpointing and resumption
@@ -35,7 +35,7 @@ class CausalTrainer:
     """
     Custom trainer for causal contrastive learning.
 
-    Optimized for memory-constrained training on RTX 4050 (6GB VRAM).
+    Optimized for RTX 4090 (24GB VRAM).
     """
 
     def __init__(
