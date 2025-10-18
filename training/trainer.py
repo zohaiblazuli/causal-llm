@@ -130,9 +130,9 @@ class CausalTrainer:
 
     def _create_scheduler(self):
         """Create learning rate scheduler."""
-        # CRITICAL FIX: len(dataloader) is batches, not samples!
-        # Each batch processes 1 sample, but we only step optimizer every grad_accum_steps batches
-        # So total optimizer steps = total_batches / grad_accum_steps
+        # Calculate total optimizer steps
+        # len(train_dataloader) = number of batches per epoch
+        # Optimizer steps once per gradient_accumulation_steps batches
         total_batches = len(self.train_dataloader) * self.num_epochs
         num_training_steps = total_batches // self.gradient_accumulation_steps
 
