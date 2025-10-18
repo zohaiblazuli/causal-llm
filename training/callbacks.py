@@ -290,6 +290,14 @@ class MemoryMonitor(Callback):
         if step % self.clear_cache_every_n_steps == 0:
             clear_memory()
 
+    def on_epoch_begin(self, trainer, epoch: int):
+        """Clear cache at epoch start to prevent memory accumulation."""
+        clear_memory()
+
+    def on_epoch_end(self, trainer, epoch: int, metrics: Dict[str, float]):
+        """Clear cache at epoch end."""
+        clear_memory()
+
     def on_validation_begin(self, trainer):
         """Clear cache before validation."""
         clear_memory()

@@ -87,6 +87,9 @@ class CausalTrainer:
         self.resumed_epoch = 0
         self.resumed_batch_idx = 0
 
+        # Gradient accumulation counter (CRITICAL FIX for resumption)
+        self.grad_accum_counter = 0
+
         # Training config
         self.num_epochs = self.config.get("training", {}).get("num_epochs", 3)
         self.gradient_accumulation_steps = self.config.get("training", {}).get("gradient_accumulation_steps", 16)
@@ -127,7 +130,12 @@ class CausalTrainer:
 
     def _create_scheduler(self):
         """Create learning rate scheduler."""
-        num_training_steps = len(self.train_dataloader) * self.num_epochs // self.gradient_accumulation_steps
+        # CRITICAL FIX: len(dataloader) is batches, not samples!
+        # Each batch processes 1 sample, but we only step optimizer every grad_accum_steps batches
+        # So total optimizer steps = total_batches / grad_accum_steps
+        total_batches = len(self.train_dataloader) * self.num_epochs
+        num_training_steps = total_batches // self.gradient_accumulation_steps
+
         num_warmup_steps = int(num_training_steps * self.config.get("training", {}).get("warmup_ratio", 0.03))
 
         scheduler = get_scheduler(
@@ -137,6 +145,7 @@ class CausalTrainer:
             num_training_steps=num_training_steps
         )
 
+        print(f"Scheduler: {num_training_steps} total steps, {num_warmup_steps} warmup steps")
         return scheduler
 
     def train(self):
@@ -227,6 +236,8 @@ class CausalTrainer:
                     print(f"RESUMING: Batch {batch_idx} | Step {self.global_step}")
                     print(f"{'='*60}\n")
                     self.resumed_batch_idx = 0
+                    # CRITICAL FIX: Reset gradient accumulation counter when resuming
+                    self.grad_accum_counter = batch_idx % self.gradient_accumulation_steps
 
             # Trigger callbacks (only for non-skipped batches)
             for callback in self.callbacks:
@@ -340,9 +351,18 @@ class CausalTrainer:
             logits_benign = logits_combined[:batch_size]
 
             # Pool and project each representation
+            # CRITICAL FIX: Use safer pooling to handle edge cases
+            def safe_attention_pool(hidden_states, attention_mask):
+                """Attention-weighted pooling with numerical stability."""
+                mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_states.size()).float()
+                sum_hidden = (hidden_states * mask_expanded).sum(dim=1)
+                sum_mask = mask_expanded.sum(dim=1)
+                # Clamp to avoid division by very small numbers
+                sum_mask = sum_mask.clamp(min=1e-9)
+                return sum_hidden / sum_mask
+
             # Benign
-            mask_expanded_benign = batch["benign_attention_mask"].unsqueeze(-1).expand(hidden_states_benign.size()).float()
-            pooled_benign = (hidden_states_benign * mask_expanded_benign).sum(dim=1) / mask_expanded_benign.sum(dim=1).clamp(min=1e-9)
+            pooled_benign = safe_attention_pool(hidden_states_benign, batch["benign_attention_mask"])
             representation_benign = self.model.causal_projection(pooled_benign)
             benign_outputs = {
                 "logits": logits_benign,
@@ -350,8 +370,7 @@ class CausalTrainer:
             }
 
             # Benign counterfactual
-            mask_expanded_benign_cf = batch["benign_cf_attention_mask"].unsqueeze(-1).expand(hidden_states_benign_cf.size()).float()
-            pooled_benign_cf = (hidden_states_benign_cf * mask_expanded_benign_cf).sum(dim=1) / mask_expanded_benign_cf.sum(dim=1).clamp(min=1e-9)
+            pooled_benign_cf = safe_attention_pool(hidden_states_benign_cf, batch["benign_cf_attention_mask"])
             representation_benign_cf = self.model.causal_projection(pooled_benign_cf)
             benign_cf_outputs = {
                 "logits": None,  # Don't need logits for counterfactual
@@ -359,8 +378,7 @@ class CausalTrainer:
             }
 
             # Injection
-            mask_expanded_injection = batch["injection_attention_mask"].unsqueeze(-1).expand(hidden_states_injection.size()).float()
-            pooled_injection = (hidden_states_injection * mask_expanded_injection).sum(dim=1) / mask_expanded_injection.sum(dim=1).clamp(min=1e-9)
+            pooled_injection = safe_attention_pool(hidden_states_injection, batch["injection_attention_mask"])
             representation_injection = self.model.causal_projection(pooled_injection)
             injection_outputs = {
                 "logits": None,  # Don't need logits for injection
@@ -387,8 +405,10 @@ class CausalTrainer:
         else:
             loss.backward()
 
-        # Gradient accumulation
-        if (batch_idx + 1) % self.gradient_accumulation_steps == 0:
+        # Gradient accumulation (CRITICAL FIX: use separate counter, not batch_idx)
+        self.grad_accum_counter += 1
+
+        if self.grad_accum_counter >= self.gradient_accumulation_steps:
             # Gradient clipping
             if self.max_grad_norm > 0:
                 if self.fp16 and self.scaler:
@@ -413,8 +433,9 @@ class CausalTrainer:
             # Zero gradients
             self.optimizer.zero_grad()
 
-            # Increment global step
+            # Increment global step and reset accumulation counter
             self.global_step += 1
+            self.grad_accum_counter = 0
 
         # Extract metrics (unscale loss)
         metrics = {
@@ -500,25 +521,29 @@ class CausalTrainer:
 
                 logits_benign = logits_combined[:batch_size]
 
-                # Pool and project each representation
-                mask_expanded_benign = batch["benign_attention_mask"].unsqueeze(-1).expand(hidden_states_benign.size()).float()
-                pooled_benign = (hidden_states_benign * mask_expanded_benign).sum(dim=1) / mask_expanded_benign.sum(dim=1).clamp(min=1e-9)
+                # Pool and project each representation (use same safe pooling as training)
+                def safe_attention_pool(hidden_states, attention_mask):
+                    """Attention-weighted pooling with numerical stability."""
+                    mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_states.size()).float()
+                    sum_hidden = (hidden_states * mask_expanded).sum(dim=1)
+                    sum_mask = mask_expanded.sum(dim=1).clamp(min=1e-9)
+                    return sum_hidden / sum_mask
+
+                pooled_benign = safe_attention_pool(hidden_states_benign, batch["benign_attention_mask"])
                 representation_benign = self.model.causal_projection(pooled_benign)
                 benign_outputs = {
                     "logits": logits_benign,
                     "representation": representation_benign
                 }
 
-                mask_expanded_benign_cf = batch["benign_cf_attention_mask"].unsqueeze(-1).expand(hidden_states_benign_cf.size()).float()
-                pooled_benign_cf = (hidden_states_benign_cf * mask_expanded_benign_cf).sum(dim=1) / mask_expanded_benign_cf.sum(dim=1).clamp(min=1e-9)
+                pooled_benign_cf = safe_attention_pool(hidden_states_benign_cf, batch["benign_cf_attention_mask"])
                 representation_benign_cf = self.model.causal_projection(pooled_benign_cf)
                 benign_cf_outputs = {
                     "logits": None,
                     "representation": representation_benign_cf
                 }
 
-                mask_expanded_injection = batch["injection_attention_mask"].unsqueeze(-1).expand(hidden_states_injection.size()).float()
-                pooled_injection = (hidden_states_injection * mask_expanded_injection).sum(dim=1) / mask_expanded_injection.sum(dim=1).clamp(min=1e-9)
+                pooled_injection = safe_attention_pool(hidden_states_injection, batch["injection_attention_mask"])
                 representation_injection = self.model.causal_projection(pooled_injection)
                 injection_outputs = {
                     "logits": None,
@@ -622,20 +647,26 @@ class CausalTrainer:
         """
         checkpoint_path = Path(checkpoint_dir)
 
-        # Load model
+        # CRITICAL FIX: Load causal projection BEFORE loading PEFT model
+        # because PeftModel.from_pretrained() creates a new wrapped model
+        projection_path = checkpoint_path / "causal_projection.pt"
+        projection_state = None
+        if projection_path.exists():
+            projection_state = torch.load(projection_path, map_location=self.device)
+            print(f"Found causal projection checkpoint at {projection_path}")
+        else:
+            print("Warning: causal_projection.pt not found in checkpoint")
+
+        # Load PEFT model weights
         from peft import PeftModel
         self.model = PeftModel.from_pretrained(self.model, checkpoint_path)
 
-        # Load causal projection weights
-        if hasattr(self.model, 'causal_projection'):
-            projection_path = checkpoint_path / "causal_projection.pt"
-            if projection_path.exists():
-                self.model.causal_projection.load_state_dict(
-                    torch.load(projection_path, map_location=self.device)
-                )
-                print(f"Loaded causal projection from {projection_path}")
-            else:
-                print("Warning: causal_projection.pt not found in checkpoint")
+        # Re-attach and load causal projection weights
+        if projection_state is not None and hasattr(self.model, 'causal_projection'):
+            self.model.causal_projection.load_state_dict(projection_state)
+            print(f"✓ Causal projection loaded successfully")
+        elif projection_state is None and hasattr(self.model, 'causal_projection'):
+            print("Warning: Causal projection exists but no checkpoint found - using random weights!")
 
         # Load training state (saved by callbacks as trainer_state.pt)
         trainer_state_path = checkpoint_path / "trainer_state.pt"

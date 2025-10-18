@@ -269,10 +269,10 @@ def setup_dataloaders(config: dict, tokenizer, debug: bool = False):
             print("Warning: validation dataset has 0 valid samples. Continuing without validation.")
             val_dataset = None
 
-    # Create collator
+    # Create collator (CRITICAL FIX: use same padding as config for consistency)
     collator = CausalContrastiveCollator(
         tokenizer=tokenizer,
-        padding="longest"  # Dynamic padding for efficiency
+        padding=data_config.get("padding", "max_length")  # Use config padding
     )
 
     # Create dataloaders

@@ -152,15 +152,18 @@ def estimate_model_memory(
     # Base model sizes (approximate)
     model_sizes = {
         "llama-2-7b": 7_000_000_000,
+        "llama-3.2-3b": 3_000_000_000,  # CRITICAL FIX: Added Llama 3.2-3B
+        "llama-3.2-1b": 1_000_000_000,
         "llama-3.1-8b": 8_000_000_000,
         "llama-3-8b": 8_000_000_000,
     }
 
-    # Find matching model size
+    # Find matching model size (FIXED: check longest match first to avoid "llama-3" matching "llama-3.2-3b")
     num_params = 7_000_000_000  # Default to 7B
-    for key, size in model_sizes.items():
+    # Sort by key length (descending) to match more specific names first
+    for key in sorted(model_sizes.keys(), key=len, reverse=True):
         if key in model_name.lower():
-            num_params = size
+            num_params = model_sizes[key]
             break
 
     # Memory calculations
